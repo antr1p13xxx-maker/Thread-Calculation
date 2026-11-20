@@ -1,0 +1,326 @@
+{
+  "entities": {
+    "ThreadWorkspace": {
+      "title": "ThreadWorkspace",
+      "description": "Engineering workspace configuration and project metadata for thread calculations and 3-wire QC.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the workspace owner."
+        },
+        "projectName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Project title displayed on worksheet and PDF reports."
+        },
+        "preparedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "description": "Engineer or QC division preparing the calculation."
+        },
+        "wireCheckPreset": {
+          "type": "string",
+          "enum": [
+            "mixed_qc",
+            "target_7e",
+            "nominal_basic_d2",
+            "undersize_nogo",
+            "oversize_nogo"
+          ],
+          "maxLength": 40,
+          "description": "Selected 3-wire QC inspection preset."
+        },
+        "customMeasuredWireM": {
+          "type": "object",
+          "description": "Map of rowId to custom measured 3-wire micrometer readings in mm."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when workspace was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the last workspace update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "projectName",
+        "preparedBy",
+        "wireCheckPreset",
+        "customMeasuredWireM",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ThreadProjectRow": {
+      "title": "ThreadProjectRow",
+      "description": "Calculated thread geometry, tolerance, core shear static load, and torque specification for a project row.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "threadType": {
+          "type": "string",
+          "enum": [
+            "TR",
+            "METRIC_M",
+            "SQ",
+            "BUTTRESS_S",
+            "ACME",
+            "UNC_UNF",
+            "BSW_BSF",
+            "BSP_NPT"
+          ],
+          "maxLength": 24
+        },
+        "designation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "series": {
+          "type": "number"
+        },
+        "threadAngleDeg": {
+          "type": "number"
+        },
+        "flankHalfAngleDeg": {
+          "type": "number"
+        },
+        "d": {
+          "type": "number"
+        },
+        "p": {
+          "type": "number"
+        },
+        "tpi": {
+          "type": "number"
+        },
+        "starts": {
+          "type": "number"
+        },
+        "ph": {
+          "type": "number"
+        },
+        "d2": {
+          "type": "number"
+        },
+        "d3": {
+          "type": "number"
+        },
+        "D1": {
+          "type": "number"
+        },
+        "D4": {
+          "type": "number"
+        },
+        "H1": {
+          "type": "number"
+        },
+        "h3": {
+          "type": "number"
+        },
+        "ac": {
+          "type": "number"
+        },
+        "extTolClass": {
+          "type": "string",
+          "enum": ["7e", "7h", "8e", "8c"],
+          "maxLength": 10
+        },
+        "intTolClass": {
+          "type": "string",
+          "enum": ["7H", "8H"],
+          "maxLength": 10
+        },
+        "d2Min": {
+          "type": "number"
+        },
+        "d2Max": {
+          "type": "number"
+        },
+        "d2Min7e": {
+          "type": "number"
+        },
+        "d2Max7e": {
+          "type": "number"
+        },
+        "bestWireSize": {
+          "type": "number"
+        },
+        "measureOverWires": {
+          "type": "number"
+        },
+        "wireMMin7e": {
+          "type": "number"
+        },
+        "wireMMax7e": {
+          "type": "number"
+        },
+        "coreAreaMm2": {
+          "type": "number"
+        },
+        "maxStaticLoadC45Kn": {
+          "type": "number"
+        },
+        "maxStaticLoadBronzeKn": {
+          "type": "number"
+        },
+        "materialGrade": {
+          "type": "string",
+          "enum": ["C45", "BRONZE", "C45_BRONZE_PAIR", "42CRMO4", "SUS304"],
+          "maxLength": 32
+        },
+        "appliedLoadKn": {
+          "type": "number"
+        },
+        "safetyFactor": {
+          "type": "number"
+        },
+        "isLoadSafe": {
+          "type": "boolean"
+        },
+        "frictionMu": {
+          "type": "number"
+        },
+        "tighteningTorqueWorkNm": {
+          "type": "number"
+        },
+        "lengthMm": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workspaceId",
+        "threadType",
+        "designation",
+        "series",
+        "d",
+        "p",
+        "starts",
+        "extTolClass",
+        "intTolClass",
+        "materialGrade",
+        "appliedLoadKn",
+        "frictionMu",
+        "lengthMm",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WireInspection": {
+      "title": "WireInspection",
+      "description": "3-wire Go/No-Go 7e/7H micrometer inspection reading logged by QC.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "rowId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "designation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "bestWireSizeMm": {
+          "type": "number"
+        },
+        "measuredWireMMm": {
+          "type": "number"
+        },
+        "wireMMin7eMm": {
+          "type": "number"
+        },
+        "wireMMax7eMm": {
+          "type": "number"
+        },
+        "inferredD2Mm": {
+          "type": "number"
+        },
+        "qcStatus": {
+          "type": "string",
+          "enum": ["GO", "NO_GO_UNDERSIZE", "NO_GO_OVERSIZE"],
+          "maxLength": 32
+        },
+        "inspectedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workspaceId",
+        "rowId",
+        "designation",
+        "bestWireSizeMm",
+        "measuredWireMMm",
+        "wireMMin7eMm",
+        "wireMMax7eMm",
+        "inferredD2Mm",
+        "qcStatus",
+        "inspectedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/workspaces/{workspaceId}": {
+      "schema": { "$ref": "#/entities/ThreadWorkspace" },
+      "description": "User-owned thread engineering workspace document."
+    },
+    "/workspaces/{workspaceId}/projectRows/{rowId}": {
+      "schema": { "$ref": "#/entities/ThreadProjectRow" },
+      "description": "Calculated project thread rows belonging to a workspace."
+    },
+    "/workspaces/{workspaceId}/wireInspections/{inspectionId}": {
+      "schema": { "$ref": "#/entities/WireInspection" },
+      "description": "3-wire Go/No-Go QC micrometer inspection logs belonging to a workspace."
+    }
+  }
+}

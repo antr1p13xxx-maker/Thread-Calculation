@@ -1,0 +1,6 @@
+{
+  "name": "UlirTR Studio — Spreadsheet & Kalkulator Ulir Trapesium ISO 2901 / DIN 103",
+  "description": "Aplikasi web spreadsheet teknik lengkap untuk standar ulir metrik trapesium (Ulir TR / ISO 2901-2904 / DIN 103), kalkulator toleransi, pengukuran 3-kawat, G-Code bubut CNC, dan sinkronisasi langsung dengan Google Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,436 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string &&
+        id.size() >= 1 &&
+        id.size() <= 128 &&
+        id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(ownerId) {
+      return isSignedIn() && ownerId == request.auth.uid;
+    }
+
+    function isParentWorkspaceOwner(workspaceId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/workspaces/$(workspaceId)) &&
+        get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerId == request.auth.uid;
+    }
+
+    function isValidWirePreset(preset) {
+      return preset in [
+        'mixed_qc',
+        'target_7e',
+        'nominal_basic_d2',
+        'undersize_nogo',
+        'oversize_nogo'
+      ];
+    }
+
+    function isValidThreadType(t) {
+      return t in [
+        'TR',
+        'METRIC_M',
+        'SQ',
+        'BUTTRESS_S',
+        'ACME',
+        'UNC_UNF',
+        'BSW_BSF',
+        'BSP_NPT'
+      ];
+    }
+
+    function isValidExtTol(tol) {
+      return tol in ['7e', '7h', '8e', '8c'];
+    }
+
+    function isValidIntTol(tol) {
+      return tol in ['7H', '8H'];
+    }
+
+    function isValidMaterialGrade(grade) {
+      return grade in ['C45', 'BRONZE', 'C45_BRONZE_PAIR', '42CRMO4', 'SUS304'];
+    }
+
+    function isValidQcStatus(status) {
+      return status in ['GO', 'NO_GO_UNDERSIZE', 'NO_GO_OVERSIZE'];
+    }
+
+    // Validation Blueprint: ThreadWorkspace
+    function isValidWorkspace(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'projectName',
+          'preparedBy',
+          'wireCheckPreset',
+          'customMeasuredWireM',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'projectName',
+          'preparedBy',
+          'wireCheckPreset',
+          'customMeasuredWireM',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.projectName is string &&
+        data.projectName.size() >= 1 &&
+        data.projectName.size() <= 200 &&
+        data.preparedBy is string &&
+        data.preparedBy.size() >= 1 &&
+        data.preparedBy.size() <= 150 &&
+        data.wireCheckPreset is string &&
+        data.wireCheckPreset.size() <= 40 &&
+        isValidWirePreset(data.wireCheckPreset) &&
+        data.customMeasuredWireM is map &&
+        data.customMeasuredWireM.size() <= 100 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: ThreadProjectRow
+    function isValidProjectRow(data, workspaceId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workspaceId',
+          'threadType',
+          'designation',
+          'series',
+          'd',
+          'p',
+          'starts',
+          'extTolClass',
+          'intTolClass',
+          'materialGrade',
+          'appliedLoadKn',
+          'frictionMu',
+          'lengthMm',
+          'notes',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workspaceId',
+          'threadType',
+          'designation',
+          'series',
+          'threadAngleDeg',
+          'flankHalfAngleDeg',
+          'd',
+          'p',
+          'tpi',
+          'starts',
+          'ph',
+          'd2',
+          'd3',
+          'D1',
+          'D4',
+          'H1',
+          'h3',
+          'ac',
+          'extTolClass',
+          'intTolClass',
+          'd2Min',
+          'd2Max',
+          'd2Min7e',
+          'd2Max7e',
+          'bestWireSize',
+          'measureOverWires',
+          'wireMMin7e',
+          'wireMMax7e',
+          'coreAreaMm2',
+          'maxStaticLoadC45Kn',
+          'maxStaticLoadBronzeKn',
+          'materialGrade',
+          'appliedLoadKn',
+          'safetyFactor',
+          'isLoadSafe',
+          'frictionMu',
+          'tighteningTorqueWorkNm',
+          'lengthMm',
+          'notes',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        isValidId(data.workspaceId) &&
+        data.workspaceId == workspaceId &&
+        data.threadType is string &&
+        data.threadType.size() <= 24 &&
+        isValidThreadType(data.threadType) &&
+        data.designation is string &&
+        data.designation.size() >= 1 &&
+        data.designation.size() <= 120 &&
+        data.series is number &&
+        data.d is number && data.d > 0 &&
+        data.p is number && data.p > 0 &&
+        data.starts is number && data.starts >= 1 &&
+        data.extTolClass is string &&
+        data.extTolClass.size() <= 10 &&
+        isValidExtTol(data.extTolClass) &&
+        data.intTolClass is string &&
+        data.intTolClass.size() <= 10 &&
+        isValidIntTol(data.intTolClass) &&
+        data.materialGrade is string &&
+        data.materialGrade.size() <= 32 &&
+        isValidMaterialGrade(data.materialGrade) &&
+        data.appliedLoadKn is number && data.appliedLoadKn >= 0 &&
+        data.frictionMu is number && data.frictionMu >= 0 &&
+        data.lengthMm is number && data.lengthMm >= 0 &&
+        data.notes is string &&
+        data.notes.size() <= 500 &&
+        (!('threadAngleDeg' in data) || data.threadAngleDeg is number) &&
+        (!('flankHalfAngleDeg' in data) || data.flankHalfAngleDeg is number) &&
+        (!('tpi' in data) || data.tpi is number) &&
+        (!('ph' in data) || data.ph is number) &&
+        (!('d2' in data) || data.d2 is number) &&
+        (!('d3' in data) || data.d3 is number) &&
+        (!('D1' in data) || data.D1 is number) &&
+        (!('D4' in data) || data.D4 is number) &&
+        (!('H1' in data) || data.H1 is number) &&
+        (!('h3' in data) || data.h3 is number) &&
+        (!('ac' in data) || data.ac is number) &&
+        (!('d2Min' in data) || data.d2Min is number) &&
+        (!('d2Max' in data) || data.d2Max is number) &&
+        (!('d2Min7e' in data) || data.d2Min7e is number) &&
+        (!('d2Max7e' in data) || data.d2Max7e is number) &&
+        (!('bestWireSize' in data) || data.bestWireSize is number) &&
+        (!('measureOverWires' in data) || data.measureOverWires is number) &&
+        (!('wireMMin7e' in data) || data.wireMMin7e is number) &&
+        (!('wireMMax7e' in data) || data.wireMMax7e is number) &&
+        (!('coreAreaMm2' in data) || data.coreAreaMm2 is number) &&
+        (!('maxStaticLoadC45Kn' in data) || data.maxStaticLoadC45Kn is number) &&
+        (!('maxStaticLoadBronzeKn' in data) || data.maxStaticLoadBronzeKn is number) &&
+        (!('safetyFactor' in data) || data.safetyFactor is number) &&
+        (!('isLoadSafe' in data) || data.isLoadSafe is bool) &&
+        (!('tighteningTorqueWorkNm' in data) || data.tighteningTorqueWorkNm is number) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: WireInspection
+    function isValidWireInspection(data, workspaceId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workspaceId',
+          'rowId',
+          'designation',
+          'bestWireSizeMm',
+          'measuredWireMMm',
+          'wireMMin7eMm',
+          'wireMMax7eMm',
+          'inferredD2Mm',
+          'qcStatus',
+          'inspectedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workspaceId',
+          'rowId',
+          'designation',
+          'bestWireSizeMm',
+          'measuredWireMMm',
+          'wireMMin7eMm',
+          'wireMMax7eMm',
+          'inferredD2Mm',
+          'qcStatus',
+          'inspectedAt'
+        ]) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        isValidId(data.workspaceId) &&
+        data.workspaceId == workspaceId &&
+        isValidId(data.rowId) &&
+        data.designation is string &&
+        data.designation.size() >= 1 &&
+        data.designation.size() <= 120 &&
+        data.bestWireSizeMm is number &&
+        data.measuredWireMMm is number &&
+        data.wireMMin7eMm is number &&
+        data.wireMMax7eMm is number &&
+        data.inferredD2Mm is number &&
+        data.qcStatus is string &&
+        data.qcStatus.size() <= 32 &&
+        isValidQcStatus(data.qcStatus) &&
+        data.inspectedAt is timestamp;
+    }
+
+    // Workspace Collection
+    match /workspaces/{workspaceId} {
+      allow get: if isValidId(workspaceId) && isOwner(existing().ownerId);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+        isValidId(workspaceId) &&
+        isValidWorkspace(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isSignedIn() &&
+        isValidId(workspaceId) &&
+        isValidWorkspace(incoming()) &&
+        isOwner(existing().ownerId) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly(['projectName', 'preparedBy', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['customMeasuredWireM', 'wireCheckPreset', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['projectName', 'preparedBy', 'customMeasuredWireM', 'wireCheckPreset', 'updatedAt'])
+        );
+
+      allow delete: if isValidId(workspaceId) && isOwner(existing().ownerId);
+
+      // Subcollection: Project Thread Rows
+      match /projectRows/{rowId} {
+        allow get: if isValidId(workspaceId) &&
+          isValidId(rowId) &&
+          isParentWorkspaceOwner(workspaceId) &&
+          isOwner(existing().ownerId);
+
+        allow list: if isSignedIn() &&
+          resource.data.ownerId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+          isValidId(workspaceId) &&
+          isValidId(rowId) &&
+          isValidProjectRow(incoming(), workspaceId) &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isParentWorkspaceOwner(workspaceId);
+
+        allow update: if isSignedIn() &&
+          isValidId(workspaceId) &&
+          isValidId(rowId) &&
+          isValidProjectRow(incoming(), workspaceId) &&
+          isParentWorkspaceOwner(workspaceId) &&
+          isOwner(existing().ownerId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workspaceId == existing().workspaceId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'materialGrade',
+              'appliedLoadKn',
+              'safetyFactor',
+              'isLoadSafe',
+              'frictionMu',
+              'tighteningTorqueWorkNm',
+              'lengthMm',
+              'notes',
+              'updatedAt'
+            ]) ||
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'extTolClass',
+              'intTolClass',
+              'd2Min',
+              'd2Max',
+              'd2Min7e',
+              'd2Max7e',
+              'wireMMin7e',
+              'wireMMax7e',
+              'updatedAt'
+            ]) ||
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'threadType',
+              'designation',
+              'series',
+              'threadAngleDeg',
+              'flankHalfAngleDeg',
+              'd',
+              'p',
+              'tpi',
+              'starts',
+              'ph',
+              'd2',
+              'd3',
+              'D1',
+              'D4',
+              'H1',
+              'h3',
+              'ac',
+              'extTolClass',
+              'intTolClass',
+              'd2Min',
+              'd2Max',
+              'd2Min7e',
+              'd2Max7e',
+              'bestWireSize',
+              'measureOverWires',
+              'wireMMin7e',
+              'wireMMax7e',
+              'coreAreaMm2',
+              'maxStaticLoadC45Kn',
+              'maxStaticLoadBronzeKn',
+              'materialGrade',
+              'appliedLoadKn',
+              'safetyFactor',
+              'isLoadSafe',
+              'frictionMu',
+              'tighteningTorqueWorkNm',
+              'lengthMm',
+              'notes',
+              'updatedAt'
+            ])
+          );
+
+        allow delete: if isValidId(workspaceId) &&
+          isValidId(rowId) &&
+          isParentWorkspaceOwner(workspaceId) &&
+          isOwner(existing().ownerId);
+      }
+
+      // Subcollection: 3-Wire QC Inspections (Immutable Audit Log)
+      match /wireInspections/{inspectionId} {
+        allow get: if isValidId(workspaceId) &&
+          isValidId(inspectionId) &&
+          isParentWorkspaceOwner(workspaceId) &&
+          isOwner(existing().ownerId);
+
+        allow list: if isSignedIn() &&
+          resource.data.ownerId == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+          isValidId(workspaceId) &&
+          isValidId(inspectionId) &&
+          isValidWireInspection(incoming(), workspaceId) &&
+          incoming().inspectedAt == request.time &&
+          isParentWorkspaceOwner(workspaceId);
+
+        allow update: if false;
+
+        allow delete: if isValidId(workspaceId) &&
+          isValidId(inspectionId) &&
+          isParentWorkspaceOwner(workspaceId) &&
+          isOwner(existing().ownerId);
+      }
+    }
+  }
+}
