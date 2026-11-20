@@ -17,6 +17,7 @@ import { TrCalculatedRow, THREAD_MATERIAL_SPECS } from '../data/trThreadData';
 interface FrictionTorqueChartPanelProps {
   row: TrCalculatedRow;
   onSelectFrictionMu?: (newMu: number) => void;
+  isDark?: boolean;
 }
 
 type ChartDisplayMode = 'work_torque_efficiency' | 'd3_core_capacity_torsion';
@@ -39,7 +40,7 @@ interface FrictionCurveDataPoint {
 
 export const FrictionTorqueChartPanel: React.FC<
   FrictionTorqueChartPanelProps
-> = ({ row, onSelectFrictionMu }) => {
+> = ({ row, onSelectFrictionMu, isDark = false }) => {
   const [displayMode, setDisplayMode] = useState<ChartDisplayMode>(
     'work_torque_efficiency'
   );
@@ -151,32 +152,37 @@ export const FrictionTorqueChartPanel: React.FC<
     setTimeout(() => setAppliedNotice(null), 2000);
   };
 
+  const gridColor = isDark ? '#1E293B' : '#E2E8F0';
+  const tickColor = isDark ? '#94A3B8' : '#475569';
+  const labelColor = isDark ? '#CBD5E1' : '#334155';
+  const leftAxisColor = isDark ? '#E2E8F0' : '#1E293B';
+
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4 transition-colors">
       {/* Top Header & Mode Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3.5">
         <div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-sm font-semibold text-slate-900">
+            <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               Visualisasi Grafik Hubungan Koefisien Gesek (μ) terhadap Torsi Pengencangan (T) &amp; Penampang Inti d3 — {row.designation}
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Kurva analitik non-linear <code className="font-mono text-slate-800">T(μ) = 0.5 · F · d2 · tan(λ + arctan(μ / cos 15°))</code> dan tegangan puntir inti <code className="font-mono text-blue-700">d3 = {row.d3.toFixed(3)} mm</code> (<code className="font-mono text-slate-800">Ac = {row.coreAreaMm2.toFixed(2)} mm²</code>) untuk rentang <code className="font-mono text-slate-800">μ = 0.04 s/d 0.30</code>. Klik titik pada kurva untuk menerapkan nilai μ.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Kurva analitik non-linear <code className="font-mono text-slate-800 dark:text-slate-200">T(μ) = 0.5 · F · d2 · tan(λ + arctan(μ / cos 15°))</code> dan tegangan puntir inti <code className="font-mono text-blue-700 dark:text-blue-400">d3 = {row.d3.toFixed(3)} mm</code> (<code className="font-mono text-slate-800 dark:text-slate-200">Ac = {row.coreAreaMm2.toFixed(2)} mm²</code>) untuk rentang <code className="font-mono text-slate-800 dark:text-slate-200">μ = 0.04 s/d 0.30</code>. Klik titik pada kurva untuk menerapkan nilai μ.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Chart Mode Segmented Selector */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md text-xs">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md text-xs">
             <button
               type="button"
               onClick={() => setDisplayMode('work_torque_efficiency')}
               className={`px-2.5 py-1 font-medium rounded transition-colors whitespace-nowrap ${
                 displayMode === 'work_torque_efficiency'
-                  ? 'bg-white text-indigo-900 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-900 dark:text-indigo-300 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Kurva Torsi Kerja (T) &amp; Efisiensi (η)
@@ -186,8 +192,8 @@ export const FrictionTorqueChartPanel: React.FC<
               onClick={() => setDisplayMode('d3_core_capacity_torsion')}
               className={`px-2.5 py-1 font-medium rounded transition-colors whitespace-nowrap ${
                 displayMode === 'd3_core_capacity_torsion'
-                  ? 'bg-white text-blue-900 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-blue-900 dark:text-blue-300 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Kapasitas Inti d3 (C45 vs Perunggu) &amp; τ_puntir
@@ -200,8 +206,8 @@ export const FrictionTorqueChartPanel: React.FC<
             onClick={() => setIncludeCollar((prev) => !prev)}
             className={`px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               includeCollar
-                ? 'bg-indigo-50 text-indigo-800 border-indigo-200'
-                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             {includeCollar ? '+ Gesekan Collar Aktif' : 'Hanya Torsi Ulir Murni'}
@@ -211,16 +217,16 @@ export const FrictionTorqueChartPanel: React.FC<
 
       {/* Interactive Load & Active Point Telemetry Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 bg-slate-50 border border-slate-200 rounded-md flex flex-col justify-between">
+        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-md flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-slate-600 font-medium">
+            <span className="text-slate-600 dark:text-slate-300 font-medium">
               Beban Aksial Simulasi F (kN):
             </span>
             {customLoadKn !== null && (
               <button
                 type="button"
                 onClick={() => setCustomLoadKn(null)}
-                className="text-[11px] text-blue-600 hover:underline"
+                className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
               >
                 Reset ({row.appliedLoadKn} kN)
               </button>
@@ -233,55 +239,55 @@ export const FrictionTorqueChartPanel: React.FC<
               min={0.5}
               value={activeLoadKn}
               onChange={(e) => setCustomLoadKn(Number(e.target.value))}
-              className="w-24 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded focus:outline-none focus:border-indigo-600"
+              className="w-24 px-2 py-1 text-xs font-mono font-semibold bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded focus:outline-none focus:border-indigo-600"
             />
-            <span className="font-mono text-[11px] text-slate-500">
+            <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
               d2={row.d2} mm · d3={row.d3} mm
             </span>
           </div>
         </div>
 
-        <div className="p-3 bg-indigo-50/60 border border-indigo-200 rounded-md">
-          <div className="text-indigo-950 font-medium flex items-center justify-between">
+        <div className="p-3 bg-indigo-50/60 dark:bg-indigo-950/35 border border-indigo-200 dark:border-indigo-800/60 rounded-md">
+          <div className="text-indigo-950 dark:text-indigo-200 font-medium flex items-center justify-between">
             <span>Titik Operasi Aktif (μ = {row.frictionMu.toFixed(2)})</span>
             {appliedNotice !== null && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
                 <CheckCircle2 className="w-3 h-3" />
                 μ={appliedNotice.toFixed(2)}
               </span>
             )}
           </div>
-          <div className="font-mono text-sm font-bold text-indigo-800 mt-1">
+          <div className="font-mono text-sm font-bold text-indigo-800 dark:text-indigo-300 mt-1">
             T_ulir = {activePoint.tThreadWorkNm} N·m{' '}
-            <span className="text-xs font-normal text-slate-600">
+            <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
               (T_total = {activePoint.tTotalWorkNm} N·m)
             </span>
           </div>
-          <div className="font-mono text-[11px] text-slate-600 mt-0.5">
+          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
             Efisiensi η = {activePoint.efficiencyPct}% · τ_puntir(d3) = {activePoint.tauTorsionD3Mpa} MPa
           </div>
         </div>
 
-        <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-md">
-          <div className="text-blue-950 font-medium">
+        <div className="p-3 bg-blue-50/50 dark:bg-blue-950/35 border border-blue-200 dark:border-blue-800/60 rounded-md">
+          <div className="text-blue-950 dark:text-blue-200 font-medium">
             Rentang Torsi Ulir (μ = 0.04 → 0.30)
           </div>
-          <div className="font-mono text-sm font-bold text-blue-800 mt-1">
+          <div className="font-mono text-sm font-bold text-blue-800 dark:text-blue-300 mt-1">
             {minPoint.tThreadWorkNm} N·m → {maxPoint.tThreadWorkNm} N·m
           </div>
-          <div className="font-mono text-[11px] text-slate-600 mt-0.5">
+          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
             Kenaikan torsi {(maxPoint.tThreadWorkNm / Math.max(0.01, minPoint.tThreadWorkNm)).toFixed(2)}× dari pelumas MoS₂ ke kering
           </div>
         </div>
 
-        <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-md">
-          <div className="text-amber-950 font-medium">
+        <div className="p-3 bg-amber-50/60 dark:bg-amber-950/35 border border-amber-200 dark:border-amber-800/60 rounded-md">
+          <div className="text-amber-950 dark:text-amber-200 font-medium">
             Kapasitas Torsi Inti d3 ({THREAD_MATERIAL_SPECS[row.materialGrade].shortLabel})
           </div>
-          <div className="font-mono text-sm font-bold text-amber-900 mt-1">
+          <div className="font-mono text-sm font-bold text-amber-900 dark:text-amber-300 mt-1">
             C45: {activePoint.tMaxC45Nm} N·m · Brz: {activePoint.tMaxBronzeNm} N·m
           </div>
-          <div className="font-mono text-[11px] text-slate-600 mt-0.5">
+          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
             Pada beban geser inti maks d3 = {row.d3.toFixed(3)} mm
           </div>
         </div>
@@ -310,44 +316,50 @@ export const FrictionTorqueChartPanel: React.FC<
             >
               <defs>
                 <linearGradient id="gradTotalTorque" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366F1" stopOpacity={0.25} />
+                  <stop offset="5%" stopColor="#6366F1" stopOpacity={isDark ? 0.35 : 0.25} />
                   <stop offset="95%" stopColor="#6366F1" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis
                 dataKey="muLabel"
-                tick={{ fontSize: 11, fill: '#475569', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: tickColor, fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Koefisien Gesek Ulir (μ)',
                   position: 'insideBottom',
                   offset: -10,
                   fontSize: 11,
-                  fill: '#334155',
+                  fill: labelColor,
                 }}
               />
               <YAxis
                 yAxisId="torque"
-                tick={{ fontSize: 11, fill: '#1E293B', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: leftAxisColor, fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Torsi Pengencangan T (N·m)',
                   angle: -90,
                   position: 'insideLeft',
                   fontSize: 11,
-                  fill: '#1E293B',
+                  fill: leftAxisColor,
                 }}
               />
               <YAxis
                 yAxisId="eff"
                 orientation="right"
                 domain={[0, 100]}
-                tick={{ fontSize: 11, fill: '#059669', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: isDark ? '#34D399' : '#059669', fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Efisiensi Mekanis Ulir η (%)',
                   angle: 90,
                   position: 'insideRight',
                   fontSize: 11,
-                  fill: '#059669',
+                  fill: isDark ? '#34D399' : '#059669',
                 }}
               />
               <Tooltip
@@ -477,39 +489,45 @@ export const FrictionTorqueChartPanel: React.FC<
                 }
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis
                 dataKey="muLabel"
-                tick={{ fontSize: 11, fill: '#475569', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: tickColor, fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Koefisien Gesek Ulir (μ)',
                   position: 'insideBottom',
                   offset: -10,
                   fontSize: 11,
-                  fill: '#334155',
+                  fill: labelColor,
                 }}
               />
               <YAxis
                 yAxisId="maxTorque"
-                tick={{ fontSize: 11, fill: '#1E293B', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: leftAxisColor, fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Torsi Kapasitas Maks Inti d3 (N·m)',
                   angle: -90,
                   position: 'insideLeft',
                   fontSize: 11,
-                  fill: '#1E293B',
+                  fill: leftAxisColor,
                 }}
               />
               <YAxis
                 yAxisId="stress"
                 orientation="right"
-                tick={{ fontSize: 11, fill: '#DC2626', fontFamily: 'JetBrains Mono, monospace' }}
+                tick={{ fontSize: 11, fill: isDark ? '#F87171' : '#DC2626', fontFamily: 'JetBrains Mono, monospace' }}
+                axisLine={{ stroke: gridColor }}
+                tickLine={{ stroke: gridColor }}
                 label={{
                   value: 'Tegangan Puntir Inti d3 τ_t (MPa)',
                   angle: 90,
                   position: 'insideRight',
                   fontSize: 11,
-                  fill: '#DC2626',
+                  fill: isDark ? '#F87171' : '#DC2626',
                 }}
               />
               <Tooltip

@@ -300,17 +300,17 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-5 transition-colors">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3.5">
         <div>
           <div className="flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-sm font-semibold text-slate-900">
+            <Wrench className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               Kalkulator Torsi Lanjutan — Variasi Koefisien Gesek (μ) &amp; Jenis Pelumas Baut ({row.designation})
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Simulasikan pengaruh pelumas baut (Molybdenum Disulfide MoS₂, PTFE, Anti-Seize Paste, Gemuk EP, Oli, hingga Kondisi Kering) terhadap torsi pengencangan ulir, torsi bidang tumpu (collar), efisiensi, dan tegangan gabungan von Mises.
           </p>
         </div>
@@ -323,7 +323,7 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
               setPreloadForceKn(row.appliedLoadKn);
               setCollarMeanDiaMm(Number((row.d * 1.35).toFixed(1)));
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset Parameter
@@ -354,10 +354,10 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
       {/* Section 1: Lubricant Preset Cards (MoS2, Anti-Seize, PTFE, Grease, Oil, Dry) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-slate-800 dark:text-slate-200">
             1. Pilih Kondisi Pelumasan Baut / Spindel Ulir Trapesium:
           </span>
-          <span className="font-mono text-[11px] text-slate-500">
+          <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
             Kategori Aktif: {activeLubricant.category} · Suhu Kerja: {activeLubricant.tempRange}
           </span>
         </div>
@@ -372,22 +372,24 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
                 onClick={() => handleSelectLubricant(spec)}
                 className={`p-2.5 rounded-md border text-left transition-all flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-indigo-50/90 border-indigo-600 ring-1 ring-indigo-600'
-                    : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100'
+                    ? 'bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-600 dark:border-indigo-500 ring-1 ring-indigo-600 dark:ring-indigo-500'
+                    : 'bg-slate-50/70 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <div className="text-xs font-semibold text-slate-900 leading-tight">
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight">
                   {spec.shortName}
                 </div>
-                <div className="mt-2 pt-1.5 border-t border-slate-200/80 flex items-baseline justify-between font-mono">
+                <div className="mt-2 pt-1.5 border-t border-slate-200/80 dark:border-slate-700/80 flex items-baseline justify-between font-mono">
                   <span
                     className={`text-xs font-bold ${
-                      isSelected ? 'text-indigo-700' : 'text-slate-800'
+                      isSelected
+                        ? 'text-indigo-700 dark:text-indigo-300'
+                        : 'text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     μ={spec.muThreadNominal.toFixed(2)}
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     {spec.muThreadMin}..{spec.muThreadMax}
                   </span>
                 </div>
@@ -396,22 +398,22 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
           })}
         </div>
 
-        <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
+        <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-md text-xs text-slate-600 dark:text-slate-300 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <strong className="text-slate-900">{activeLubricant.name}:</strong>{' '}
+            <strong className="text-slate-900 dark:text-slate-100">{activeLubricant.name}:</strong>{' '}
             {activeLubricant.description}
           </div>
-          <span className="font-mono text-[11px] text-indigo-800 font-semibold whitespace-nowrap">
+          <span className="font-mono text-[11px] text-indigo-800 dark:text-indigo-300 font-semibold whitespace-nowrap">
             Rentang μ: {activeLubricant.muThreadMin.toFixed(2)} – {activeLubricant.muThreadMax.toFixed(2)}
           </span>
         </div>
       </div>
 
       {/* Section 2: Fine-Tuning Inputs (Preload Force, Thread Friction mu_thread, Collar Friction mu_collar) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-lg">
         {/* Axial Force F (kN) */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Beban Aksial / Preload F (kN)
           </label>
           <input
@@ -420,7 +422,7 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
             min={0.1}
             value={preloadForceKn}
             onChange={(e) => setPreloadForceKn(Number(e.target.value))}
-            className="w-full px-2.5 py-1.5 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md focus:outline-none focus:border-indigo-600 text-slate-900"
+            className="w-full px-2.5 py-1.5 text-xs font-mono font-semibold bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-indigo-600 text-slate-900 dark:text-slate-100"
           />
           <div className="flex flex-wrap items-center gap-1 mt-1.5">
             <button
@@ -430,14 +432,14 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
                   Number((row.maxStaticLoadActiveKn * 0.5).toFixed(2))
                 )
               }
-              className="px-1.5 py-0.5 text-[10px] font-mono bg-white border border-slate-300 rounded hover:bg-slate-100"
+              className="px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               50% Fmaks ({(row.maxStaticLoadActiveKn * 0.5).toFixed(1)} kN)
             </button>
             <button
               type="button"
               onClick={() => setPreloadForceKn(row.maxStaticLoadActiveKn)}
-              className="px-1.5 py-0.5 text-[10px] font-mono bg-white border border-slate-300 rounded hover:bg-slate-100"
+              className="px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               100% Fmaks ({row.maxStaticLoadActiveKn.toFixed(1)} kN)
             </button>
@@ -447,10 +449,10 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
         {/* Thread Friction Coefficient mu_ulir */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-xs font-semibold text-slate-700">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               Koef. Gesek Sisi Ulir (μ<sub>ulir</sub>)
             </label>
-            <span className="font-mono text-xs font-bold text-indigo-700">
+            <span className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400">
               {customMuThread.toFixed(3)}
             </span>
           </div>
@@ -471,10 +473,10 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
               max={0.5}
               value={customMuThread}
               onChange={(e) => setCustomMuThread(Number(e.target.value))}
-              className="w-18 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right"
+              className="w-18 px-2 py-1 text-xs font-mono font-semibold bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md text-right"
             />
           </div>
-          <div className="text-[11px] font-mono text-slate-500 mt-1">
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1">
             μ&apos; = μ/cos 15° = {calc.current.muPrime.toFixed(4)} · ρ&apos; = {calc.current.rhoPrimeDeg.toFixed(2)}°
           </div>
         </div>
@@ -482,15 +484,15 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
         {/* Collar / Bearing Surface Friction Coefficient mu_collar */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-xs font-semibold text-slate-700">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               Koef. Gesek Tumpuan (μ<sub>collar</sub>)
             </label>
-            <label className="inline-flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer">
+            <label className="inline-flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={includeCollarFriction}
                 onChange={(e) => setIncludeCollarFriction(e.target.checked)}
-                className="rounded border-slate-300"
+                className="rounded border-slate-300 dark:border-slate-600"
               />
               Aktifkan Collar
             </label>
@@ -514,10 +516,10 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
               disabled={!includeCollarFriction}
               value={customMuCollar}
               onChange={(e) => setCustomMuCollar(Number(e.target.value))}
-              className="w-18 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right disabled:opacity-40"
+              className="w-18 px-2 py-1 text-xs font-mono font-semibold bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md text-right disabled:opacity-40"
             />
           </div>
-          <div className="text-[11px] font-mono text-slate-500 mt-1">
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1">
             {includeCollarFriction
               ? 'Termasuk gesekan bidang kontak mur/bantalan'
               : 'Hanya torsi ulir murni (bantalan gelinding)'}
@@ -526,7 +528,7 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
 
         {/* Mean Collar Diameter d_collar_m */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Dia. Rata-rata Tumpuan d<sub>collar</sub> (mm)
           </label>
           <input
@@ -536,9 +538,9 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
             disabled={!includeCollarFriction}
             value={collarMeanDiaMm}
             onChange={(e) => setCollarMeanDiaMm(Number(e.target.value))}
-            className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-indigo-600 disabled:opacity-40"
+            className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:border-indigo-600 disabled:opacity-40"
           />
-          <div className="text-[11px] font-mono text-slate-500 mt-1.5">
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1.5">
             Standar ≈ 1.35 × d = {(row.d * 1.35).toFixed(1)} mm
           </div>
         </div>
@@ -546,24 +548,24 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
 
       {/* Section 3: 4 Key Engineering Torque & Combined Stress Readouts */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-md">
-          <div className="text-indigo-950 font-medium">
+        <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/35 border border-indigo-200 dark:border-indigo-800/60 rounded-md">
+          <div className="text-indigo-950 dark:text-indigo-200 font-medium">
             1. Torsi Ulir Murni (T<sub>ulir</sub>)
           </div>
-          <div className="font-mono text-base font-bold text-indigo-800 mt-1">
+          <div className="font-mono text-base font-bold text-indigo-800 dark:text-indigo-300 mt-1">
             {calc.current.tThreadNm.toLocaleString('id-ID', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{' '}
             N·m
           </div>
-          <div className="font-mono text-[11px] text-slate-600 mt-1">
+          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-1">
             = 0.5 × {calc.FkN} kN × {row.d2} mm × tan({row.leadAngleDeg}° +{' '}
             {calc.current.rhoPrimeDeg.toFixed(2)}°)
           </div>
         </div>
 
-        <div className="p-3 bg-slate-900 text-white rounded-md">
+        <div className="p-3 bg-slate-900 dark:bg-slate-950 border border-transparent dark:border-slate-800 text-white rounded-md">
           <div className="text-slate-300 font-medium">
             2. Total Torsi Pengencangan (T<sub>total</sub>)
           </div>
@@ -580,31 +582,31 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
           </div>
         </div>
 
-        <div className="p-3 bg-slate-50 border border-slate-200 rounded-md">
-          <div className="text-slate-700 font-medium">
+        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-md">
+          <div className="text-slate-700 dark:text-slate-300 font-medium">
             3. Rentang Variasi Pelumas &amp; Torsi Buka
           </div>
-          <div className="font-mono text-sm font-semibold text-slate-900 mt-1">
+          <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 mt-1">
             {calc.minRange.tTotalTightenNm.toFixed(1)} ..{' '}
             {calc.maxRange.tTotalTightenNm.toFixed(1)} N·m
           </div>
-          <div className="font-mono text-[11px] text-slate-500 mt-1">
+          <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Torsi Buka: {calc.current.tTotalLoosenNm.toFixed(2)} N·m · η_ulir ={' '}
             {calc.current.etaThreadPct.toFixed(1)}%
           </div>
         </div>
 
-        <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-md">
-          <div className="text-emerald-950 font-medium">
+        <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/35 border border-emerald-200 dark:border-emerald-800/60 rounded-md">
+          <div className="text-emerald-950 dark:text-emerald-200 font-medium">
             4. Tegangan Gabungan Inti (von Mises σ<sub>vM</sub>)
           </div>
-          <div className="font-mono text-sm font-semibold text-emerald-800 mt-1">
+          <div className="font-mono text-sm font-semibold text-emerald-800 dark:text-emerald-300 mt-1">
             σ_vM = {calc.current.sigmaVonMisesMpa.toFixed(1)} MPa{' '}
-            <span className="text-xs font-normal text-slate-600">
+            <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
               (SF = {calc.safetyFactorVonMises.toFixed(2)})
             </span>
           </div>
-          <div className="font-mono text-[11px] text-slate-600 mt-1">
+          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-1">
             σ_aksial = {calc.current.sigmaAxialMpa.toFixed(1)} MPa · τ_puntir ={' '}
             {calc.current.tauTorsionMpa.toFixed(1)} MPa
           </div>
@@ -612,19 +614,19 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
       </div>
 
       {/* Section 4: Comprehensive Comparison Table Across All Bolt Lubricants */}
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
-        <div className="bg-slate-100 px-3.5 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="font-semibold text-slate-900">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+        <div className="bg-slate-100 dark:bg-slate-800 px-3.5 py-2 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span className="font-semibold text-slate-900 dark:text-slate-100">
             Tabel Komparasi Torsi Pengencangan Berdasarkan Jenis Pelumas Baut — {row.designation} pada F = {calc.FkN} kN
           </span>
-          <span className="font-mono text-[11px] text-slate-500">
+          <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
             Klik baris pelumas untuk mengaktifkan parameter
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs font-mono tabular-nums">
-            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
               <tr>
                 <th className="py-2 px-3 text-left font-sans font-semibold">
                   Jenis Pelumas / Kondisi Permukaan Ulir
@@ -632,20 +634,20 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
                 <th className="py-2 px-2 text-right">μ Ulir</th>
                 <th className="py-2 px-2 text-right">μ&apos; Efektif</th>
                 <th className="py-2 px-2 text-right">Sudut ρ&apos; (°)</th>
-                <th className="py-2 px-2.5 text-right bg-indigo-50/50 text-indigo-950">
+                <th className="py-2 px-2.5 text-right bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-200">
                   Torsi Ulir T_ulir (N·m)
                 </th>
                 <th className="py-2 px-2.5 text-right">
                   Torsi Collar (N·m)
                 </th>
-                <th className="py-2 px-2.5 text-right bg-slate-200/70 text-slate-900">
+                <th className="py-2 px-2.5 text-right bg-slate-200/70 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                   Total T_kencang (N·m)
                 </th>
                 <th className="py-2 px-2 text-right">Efisiensi η (%)</th>
                 <th className="py-2 px-2.5 text-right">σ_vM Inti (MPa)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {calc.comparisonRows.map((item) => {
                 const isSelected = item.spec.id === selectedLubricantId;
                 return (
@@ -654,38 +656,38 @@ export const AdvancedTorqueCalculatorPanel: React.FC<
                     onClick={() => handleSelectLubricant(item.spec)}
                     className={`cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-indigo-50/80 font-semibold'
-                        : 'hover:bg-slate-50'
+                        ? 'bg-indigo-50/80 dark:bg-indigo-950/40 font-semibold'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                   >
-                    <td className="py-2 px-3 font-sans text-slate-900">
+                    <td className="py-2 px-3 font-sans text-slate-900 dark:text-slate-100">
                       <div className="font-medium">{item.spec.name}</div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                         {item.spec.category} · Rentang μ: {item.spec.muThreadMin}–{item.spec.muThreadMax}
                       </div>
                     </td>
-                    <td className="py-2 px-2 text-right font-semibold text-indigo-700">
+                    <td className="py-2 px-2 text-right font-semibold text-indigo-700 dark:text-indigo-400">
                       {item.spec.muThreadNominal.toFixed(2)}
                     </td>
-                    <td className="py-2 px-2 text-right text-slate-600">
+                    <td className="py-2 px-2 text-right text-slate-600 dark:text-slate-400">
                       {item.muPrime.toFixed(3)}
                     </td>
-                    <td className="py-2 px-2 text-right text-slate-600">
+                    <td className="py-2 px-2 text-right text-slate-600 dark:text-slate-400">
                       {item.rhoPrimeDeg.toFixed(2)}°
                     </td>
-                    <td className="py-2 px-2.5 text-right font-bold text-indigo-800 bg-indigo-50/30">
+                    <td className="py-2 px-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-50/30 dark:bg-indigo-950/30">
                       {item.tThreadNm.toFixed(2)}
                     </td>
-                    <td className="py-2 px-2.5 text-right text-slate-600">
+                    <td className="py-2 px-2.5 text-right text-slate-600 dark:text-slate-400">
                       {item.tCollarNm.toFixed(2)}
                     </td>
-                    <td className="py-2 px-2.5 text-right font-bold text-slate-900 bg-slate-100/70">
+                    <td className="py-2 px-2.5 text-right font-bold text-slate-900 dark:text-slate-100 bg-slate-100/70 dark:bg-slate-800/60">
                       {item.tTotalTightenNm.toFixed(2)}
                     </td>
-                    <td className="py-2 px-2 text-right text-emerald-700">
+                    <td className="py-2 px-2 text-right text-emerald-700 dark:text-emerald-400">
                       {item.etaThreadPct.toFixed(1)}%
                     </td>
-                    <td className="py-2 px-2.5 text-right text-slate-700">
+                    <td className="py-2 px-2.5 text-right text-slate-700 dark:text-slate-300">
                       {item.sigmaVonMisesMpa.toFixed(1)}
                     </td>
                   </tr>

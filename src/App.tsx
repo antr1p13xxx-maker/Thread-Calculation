@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import {
   ISO_2902_STANDARD_SPECS,
@@ -75,6 +77,26 @@ type ColumnGroup = 'all' | 'basic' | 'profile' | 'tolerance' | 'inspection';
 type PitchCatalogMode = 'standard_multi' | 'full_matrix';
 
 export default function App() {
+  // Light / Dark Mode state synced with early script in index.html
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark')
+        ? 'dark'
+        : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    try {
+      localStorage.setItem('thread-calc-theme', theme);
+    } catch {
+      // Ignore storage access errors
+    }
+  }, [theme]);
+
   // Navigation state
   const [activeView, setActiveView] = useState<ActiveView>('standard');
 
@@ -1050,9 +1072,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 transition-colors duration-150">
       {/* STRICT 3-ZONE TOP BAR CONTRACT */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 bg-white border-b border-slate-200">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         {/* Zone 1: Single text element wordmark */}
         <a
           href="#top"
@@ -1060,20 +1082,20 @@ export default function App() {
             e.preventDefault();
             setActiveView('standard');
           }}
-          className="text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
+          className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0"
         >
           Thread Calculation
         </a>
 
-        {/* Zone 2: 4 clean single-line navigation links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+        {/* Zone 2: 3 clean single-line navigation links */}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-400">
           <button
             type="button"
             onClick={() => setActiveView('standard')}
             className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeView === 'standard'
-                ? 'border-blue-600 text-slate-900 font-semibold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-blue-600 dark:border-blue-400 text-slate-900 dark:text-slate-100 font-semibold'
+                : 'border-transparent hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             Tabel Standar Tr 8 – Tr 1120
@@ -1083,8 +1105,8 @@ export default function App() {
             onClick={() => setActiveView('project')}
             className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeView === 'project'
-                ? 'border-blue-600 text-slate-900 font-semibold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-blue-600 dark:border-blue-400 text-slate-900 dark:text-slate-100 font-semibold'
+                : 'border-transparent hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             Lembar Kerja Proyek ({projectRows.length})
@@ -1094,20 +1116,45 @@ export default function App() {
             onClick={() => setActiveView('cad_calc')}
             className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeView === 'cad_calc'
-                ? 'border-blue-600 text-slate-900 font-semibold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-blue-600 dark:border-blue-400 text-slate-900 dark:text-slate-100 font-semibold'
+                : 'border-transparent hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
             Profil CAD & Kalkulator
           </button>
         </nav>
 
-        {/* Zone 3: Primary Action (Export CSV) */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Zone 3: Theme Toggle & Primary Action (Export CSV) */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={() =>
+              setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+            }
+            aria-label={
+              theme === 'dark' ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'
+            }
+            title={
+              theme === 'dark' ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'
+            }
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors whitespace-nowrap shrink-0"
+          >
+            {theme === 'dark' ? (
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span>Terang</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-3.5 h-3.5 text-slate-600" />
+                <span>Gelap</span>
+              </>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             Ekspor CSV (
@@ -1120,14 +1167,14 @@ export default function App() {
       </header>
 
       {/* Mobile Navigation Bar */}
-      <div className="flex md:hidden items-center gap-1 px-4 py-2 bg-white border-b border-slate-200 overflow-x-auto">
+      <div className="flex md:hidden items-center gap-1 px-4 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveView('standard')}
           className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap ${
             activeView === 'standard'
-              ? 'bg-slate-900 text-white'
-              : 'text-slate-600'
+              ? 'bg-slate-900 dark:bg-blue-600 text-white'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           Tr 8 – Tr 1120
@@ -1137,8 +1184,8 @@ export default function App() {
           onClick={() => setActiveView('project')}
           className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap ${
             activeView === 'project'
-              ? 'bg-slate-900 text-white'
-              : 'text-slate-600'
+              ? 'bg-slate-900 dark:bg-blue-600 text-white'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           Proyek & Beban Statis ({projectRows.length})
@@ -1148,8 +1195,8 @@ export default function App() {
           onClick={() => setActiveView('cad_calc')}
           className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap ${
             activeView === 'cad_calc'
-              ? 'bg-slate-900 text-white'
-              : 'text-slate-600'
+              ? 'bg-slate-900 dark:bg-blue-600 text-white'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           Profil CAD & CNC
@@ -1158,7 +1205,7 @@ export default function App() {
 
       {/* Toast notification */}
       {toastNotice && (
-        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-md shadow-md">
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 bg-slate-900 dark:bg-slate-800 text-white border border-transparent dark:border-slate-700 text-xs font-medium rounded-md shadow-md">
           {toastNotice}
         </div>
       )}
@@ -1166,12 +1213,12 @@ export default function App() {
       {/* MAIN WORKSPACE CONTENT */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
         {/* Domain Context Subheader & Active Thread Summary (Unboxed Metadata with · separators) */}
-        <div className="flex flex-wrap items-baseline justify-between gap-3 pb-3 border-b border-slate-200">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-900 tracking-tight">
+            <h1 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
               Spreadsheet Teknik Ulir Trapesium Tr 8 s/d Tr 1120 — Kalkulasi Beban Statis Geser Inti (C45 vs Perunggu)
             </h1>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-1">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
               <span>Sudut Puncak α = 30°</span>
               <span aria-hidden="true">·</span>
               <span>Luas Geser Inti Ac = (π/4)·d3²</span>
@@ -1183,29 +1230,29 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-slate-500">Baris Aktif:</span>
-            <strong className="font-mono font-semibold text-blue-700">
+            <span className="text-slate-500 dark:text-slate-400">Baris Aktif:</span>
+            <strong className="font-mono font-semibold text-blue-700 dark:text-blue-400">
               {selectedRow.designation}
             </strong>
-            <span aria-hidden="true" className="text-slate-300">
+            <span aria-hidden="true" className="text-slate-300 dark:text-slate-700">
               ·
             </span>
-            <span className="font-mono text-slate-700">
+            <span className="font-mono text-slate-700 dark:text-slate-300">
               C45: <strong>{selectedRow.maxStaticLoadC45Kn} kN</strong>
             </span>
-            <span aria-hidden="true" className="text-slate-300">
+            <span aria-hidden="true" className="text-slate-300 dark:text-slate-700">
               /
             </span>
-            <span className="font-mono text-amber-800">
+            <span className="font-mono text-amber-800 dark:text-amber-400">
               Perunggu: <strong>{selectedRow.maxStaticLoadBronzeKn} kN</strong>
             </span>
-            <span aria-hidden="true" className="text-slate-300">
+            <span aria-hidden="true" className="text-slate-300 dark:text-slate-700">
               ·
             </span>
             <button
               type="button"
               onClick={() => handleAddComparisonPairToProject(selectedRow)}
-              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors whitespace-nowrap"
             >
               + Komparasi C45 vs Perunggu ke Proyek
             </button>
@@ -1300,35 +1347,35 @@ export default function App() {
 
         {/* SPREADSHEET FORMULA BAR (Always visible on Standard & Project views) */}
         {(activeView === 'standard' || activeView === 'project') && (
-          <div className="bg-white border border-slate-200 rounded-lg p-2.5 flex flex-wrap items-center gap-2 text-xs shadow-2xs">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 flex flex-wrap items-center gap-2 text-xs shadow-2xs">
             {/* Active Cell Reference Box */}
-            <div className="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded font-mono font-semibold text-slate-900 min-w-[64px] text-center">
+            <div className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded font-mono font-semibold text-slate-900 dark:text-slate-100 min-w-[64px] text-center">
               {selectedColLetter}
               {selectedRowNumber}
             </div>
 
             {/* Function symbol fx */}
-            <div className="px-2 py-1 font-mono italic font-semibold text-slate-500 select-none">
+            <div className="px-2 py-1 font-mono italic font-semibold text-slate-500 dark:text-slate-400 select-none">
               fx
             </div>
 
             {/* Formula Expression Box */}
-            <div className="flex-1 min-w-[240px] px-3 py-1 bg-slate-50 border border-slate-200 rounded font-mono text-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex-1 min-w-[240px] px-3 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded font-mono text-slate-800 dark:text-slate-200 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="text-blue-700 font-semibold">
+                <span className="text-blue-700 dark:text-blue-400 font-semibold">
                   {activeColMeta.symbol}
                 </span>{' '}
-                <span className="text-slate-600">
+                <span className="text-slate-600 dark:text-slate-400">
                   {activeColMeta.formulaExpr}
                 </span>
               </div>
-              <div className="font-semibold text-slate-900">
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
                 = {getCellDisplayValue(selectedRow, selectedColLetter)}
               </div>
             </div>
 
             {/* Parameter Description */}
-            <div className="hidden xl:block text-xs text-slate-500 px-2 max-w-md truncate">
+            <div className="hidden xl:block text-xs text-slate-500 dark:text-slate-400 px-2 max-w-md truncate">
               {activeColMeta.description}
             </div>
           </div>
@@ -1340,16 +1387,16 @@ export default function App() {
         {activeView === 'standard' && (
           <div className="space-y-5">
             {/* Filter & Parameter Control Bar */}
-            <div className="bg-white border border-slate-200 rounded-lg p-3.5 space-y-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3.5 space-y-3">
               {/* Row 0: Complete Thread Standard Family Selector */}
-              <div className="pb-2.5 border-b border-slate-100 space-y-2">
+              <div className="pb-2.5 border-b border-slate-100 dark:border-slate-800 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-slate-800">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                     Pilih Jenis &amp; Standar Ulir Lengkap:
                   </span>
-                  <span className="text-[11px] font-mono text-slate-500">
+                  <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                     8 Keluarga Standar Ulir Internasional · Total{' '}
-                    <strong className="text-slate-900">
+                    <strong className="text-slate-900 dark:text-slate-100">
                       {ISO_2902_STANDARD_SPECS.length + ALL_NON_TR_SPECS.length}
                     </strong>{' '}
                     Spesifikasi Standar (+ {FULL_MATRIX_TR8_TO_1120_SPECS.length}{' '}
@@ -1426,7 +1473,7 @@ export default function App() {
                         className={`px-2.5 py-1.5 text-xs rounded-md border transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                           active
                             ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-2xs'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         <span>{tab.label}</span>
@@ -1434,7 +1481,7 @@ export default function App() {
                           className={`px-1.5 py-0.2 rounded text-[10px] font-mono ${
                             active
                               ? 'bg-blue-700 text-blue-50'
-                              : 'bg-slate-200/80 text-slate-600'
+                              : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                           }`}
                         >
                           {tab.count}
@@ -1446,15 +1493,15 @@ export default function App() {
 
                 {/* Active Thread Family Technical Summary Strip */}
                 {threadFamilyFilter !== 'ALL' && (
-                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">
                         {THREAD_FAMILY_METADATA[threadFamilyFilter].fullName}
                       </span>
-                      <span aria-hidden="true" className="text-slate-300">
+                      <span aria-hidden="true" className="text-slate-300 dark:text-slate-700">
                         ·
                       </span>
-                      <span className="font-mono text-blue-700 font-medium">
+                      <span className="font-mono text-blue-700 dark:text-blue-400 font-medium">
                         Profil:{' '}
                         {THREAD_FAMILY_METADATA[threadFamilyFilter].profileShape}{' '}
                         (β ={' '}
@@ -1465,8 +1512,8 @@ export default function App() {
                         °)
                       </span>
                     </div>
-                    <div className="text-slate-600">
-                      <span className="font-medium text-slate-700">
+                    <div className="text-slate-600 dark:text-slate-400">
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
                         Aplikasi Utama:
                       </span>{' '}
                       {THREAD_FAMILY_METADATA[threadFamilyFilter].primaryUse}
@@ -1478,25 +1525,25 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Search input */}
                 <div className="relative flex-1 min-w-[200px] max-w-xs">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari ulir (mis. Tr 36, M 20, Sq 24, S 40, ACME, UNC, G 1/2)..."
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
 
                 {/* Mode Cakupan Pitch: Multi-Pitch Standar vs Matriks Penuh Semua Pitch */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
                   <button
                     type="button"
                     onClick={() => setCatalogMode('standard_multi')}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       catalogMode === 'standard_multi'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Standar DIN 103 & Alat Berat (
@@ -1507,8 +1554,8 @@ export default function App() {
                     onClick={() => setCatalogMode('full_matrix')}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       catalogMode === 'full_matrix'
-                        ? 'bg-white text-blue-700 shadow-2xs font-semibold'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-2xs font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Matriks Penuh Semua Pitch (
@@ -1517,14 +1564,14 @@ export default function App() {
                 </div>
 
                 {/* Segmented Control: ISO Series Filter */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
                   <button
                     type="button"
                     onClick={() => setSeriesFilter('all')}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       seriesFilter === 'all'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Semua Pitch
@@ -1534,8 +1581,8 @@ export default function App() {
                     onClick={() => setSeriesFilter(1)}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       seriesFilter === 1
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Seri 1 Utama
@@ -1545,8 +1592,8 @@ export default function App() {
                     onClick={() => setSeriesFilter(2)}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       seriesFilter === 2
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Seri 2 Halus
@@ -1556,8 +1603,8 @@ export default function App() {
                     onClick={() => setSeriesFilter(3)}
                     className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       seriesFilter === 3
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Seri 3 Kasar
@@ -1566,19 +1613,19 @@ export default function App() {
               </div>
 
               {/* Second Row: Diameter, Specific Pitch, Column Group, Starts, Tolerance */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-100 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <div className="flex flex-wrap items-center gap-2.5">
                   {/* Range Diameter */}
                   <div className="flex items-center gap-1.5">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-600 font-medium">Rentang:</span>
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Rentang:</span>
                     <select
                       value={diaRange}
                       onChange={(e) => {
                         setDiaRange(e.target.value as any);
                         setExactDiameterFilter('all');
                       }}
-                      className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                     >
                       <option value="all">Semua (Tr 8 – Tr 1120)</option>
                       <option value="small">Tr 8 – Tr 30 (Kecil)</option>
@@ -1595,7 +1642,7 @@ export default function App() {
 
                   {/* Pilih Diameter Spesifik (Tr 8 s/d Tr 1120) */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-600 font-medium">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">
                       Diameter (d):
                     </span>
                     <select
@@ -1606,7 +1653,7 @@ export default function App() {
                           val === 'all' ? 'all' : Number(val)
                         );
                       }}
-                      className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                     >
                       <option value="all">Semua d (8..1120)</option>
                       {ALL_TR_DIAMETERS.map((d) => (
@@ -1619,7 +1666,7 @@ export default function App() {
 
                   {/* Pilih Pitch Spesifik (P = 1.5 s/d 48 mm) */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-600 font-medium">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">
                       Pitch (P):
                     </span>
                     <select
@@ -1630,7 +1677,7 @@ export default function App() {
                           val === 'all' ? 'all' : Number(val)
                         );
                       }}
-                      className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                     >
                       <option value="all">Semua Pitch (1.5..48)</option>
                       {ALL_STANDARD_PITCHES.map((p) => (
@@ -1643,11 +1690,11 @@ export default function App() {
 
                   {/* Jumlah Start */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-600 font-medium">Start:</span>
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Start:</span>
                     <select
                       value={globalStarts}
                       onChange={(e) => setGlobalStarts(Number(e.target.value))}
-                      className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                     >
                       <option value={1}>1 Start (Tunggal)</option>
                       <option value={2}>2 Starts (Ph=2P)</option>
@@ -1658,7 +1705,7 @@ export default function App() {
 
                   {/* Kelas Toleransi */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-600 font-medium">Tol:</span>
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Tol:</span>
                     <select
                       value={`${extTolClass}/${intTolClass}`}
                       onChange={(e) => {
@@ -1666,7 +1713,7 @@ export default function App() {
                         setExtTolClass(ext as ExternalTolClass);
                         setIntTolClass(int as InternalTolClass);
                       }}
-                      className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                     >
                       <option value="7e/7H">7e / 7H</option>
                       <option value="8e/7H">8e / 7H</option>
@@ -1677,14 +1724,14 @@ export default function App() {
                 </div>
 
                 {/* Column Group Selector */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md overflow-x-auto">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md overflow-x-auto">
                   <button
                     type="button"
                     onClick={() => setColGroup('all')}
                     className={`px-2 py-0.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       colGroup === 'all'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Semua Kolom (A–V)
@@ -1694,8 +1741,8 @@ export default function App() {
                     onClick={() => setColGroup('basic')}
                     className={`px-2 py-0.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       colGroup === 'basic'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Dimensi Dasar
@@ -1705,8 +1752,8 @@ export default function App() {
                     onClick={() => setColGroup('profile')}
                     className={`px-2 py-0.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       colGroup === 'profile'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Profil & Pahat
@@ -1716,8 +1763,8 @@ export default function App() {
                     onClick={() => setColGroup('tolerance')}
                     className={`px-2 py-0.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       colGroup === 'tolerance'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Toleransi
@@ -1727,8 +1774,8 @@ export default function App() {
                     onClick={() => setColGroup('inspection')}
                     className={`px-2 py-0.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                       colGroup === 'inspection'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     Beban Statis C45 vs Perunggu
@@ -1737,11 +1784,11 @@ export default function App() {
               </div>
 
               {/* Third Row: Pagination & Quick Jump Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
-                <div className="flex flex-wrap items-center gap-2 text-slate-600">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-400">
                   <span>
                     Hasil Filter:{' '}
-                    <strong className="font-mono text-slate-900">
+                    <strong className="font-mono text-slate-900 dark:text-slate-100">
                       {filteredStandardRows.length}
                     </strong>{' '}
                     baris (dari Tr 8 hingga Tr 1120)
@@ -1762,7 +1809,7 @@ export default function App() {
                         className={`px-1.5 py-0.5 font-mono rounded border transition-colors ${
                           exactDiameterFilter === jumpD
                             ? 'bg-blue-600 text-white border-blue-600 font-semibold'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         Tr {jumpD}
@@ -1783,7 +1830,7 @@ export default function App() {
                         setSeriesFilter('all');
                         setSearchQuery('');
                       }}
-                      className="text-blue-600 hover:underline font-medium ml-1"
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium ml-1"
                     >
                       Reset Semua Filter
                     </button>
@@ -1795,7 +1842,7 @@ export default function App() {
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs font-mono"
+                    className="px-2 py-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono"
                   >
                     <option value={200}>200 baris / hal</option>
                     <option value={500}>500 baris / hal</option>
@@ -1813,11 +1860,11 @@ export default function App() {
                         onClick={() =>
                           setCurrentPage((p) => Math.max(1, p - 1))
                         }
-                        className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40"
+                        className="p-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
                       </button>
-                      <span className="px-2 text-slate-700">
+                      <span className="px-2 text-slate-700 dark:text-slate-300">
                         Hal {safeCurrentPage} / {totalPages}
                       </span>
                       <button
@@ -1826,7 +1873,7 @@ export default function App() {
                         onClick={() =>
                           setCurrentPage((p) => Math.min(totalPages, p + 1))
                         }
-                        className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40"
+                        className="p-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40"
                       >
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
@@ -1846,13 +1893,13 @@ export default function App() {
                 <div
                   className={`border rounded-lg p-3.5 space-y-3 transition-colors ${
                     isToleranceCheckEnabled && activeCheck.isOutOfRange
-                      ? 'bg-rose-50/70 border-rose-300'
-                      : 'bg-white border-slate-200'
+                      ? 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 text-white">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 dark:bg-slate-800 text-white border border-transparent dark:border-slate-700">
                         Pemeriksaan Batas Toleransi 3-Kawat (Go / No-Go Kelas 7e/7H)
                       </span>
                       <button
@@ -1863,7 +1910,7 @@ export default function App() {
                         className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-colors ${
                           isToleranceCheckEnabled
                             ? 'bg-emerald-600 text-white border-emerald-600'
-                            : 'bg-slate-100 text-slate-600 border-slate-300'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700'
                         }`}
                       >
                         {isToleranceCheckEnabled
@@ -1873,7 +1920,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setColGroup('tolerance')}
-                        className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                        className="px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
                       >
                         Fokus Kolom Toleransi &amp; 3-Kawat (O, P, Q, R)
                       </button>
@@ -1881,7 +1928,7 @@ export default function App() {
 
                     {/* Simulation Presets & Filter Out-of-Spec */}
                     <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                      <span className="text-slate-500 font-medium">
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">
                         Simulasi Pengukuran Tabel:
                       </span>
                       {(
@@ -1919,7 +1966,7 @@ export default function App() {
                             wireCheckPreset === mode.id &&
                             Object.keys(customMeasuredWireM).length === 0
                               ? 'bg-blue-600 text-white border-blue-600 font-semibold'
-                              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                           }`}
                         >
                           {mode.label}
@@ -1933,7 +1980,7 @@ export default function App() {
                         className={`px-2.5 py-1 rounded border text-[11px] font-semibold transition-colors ${
                           onlyShowOutOfTolRows
                             ? 'bg-rose-600 text-white border-rose-600'
-                            : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100'
+                            : 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/60'
                         }`}
                       >
                         {onlyShowOutOfTolRows
@@ -1944,14 +1991,14 @@ export default function App() {
                   </div>
 
                   {/* Active Row 3-Wire Go/No-Go Live Inspector */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2 border-t border-slate-200/80 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2 border-t border-slate-200/80 dark:border-slate-800 text-xs">
                     {/* Box 1: Input Measured 3-Wire M_ukur for Selected Row */}
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-md space-y-1.5">
+                    <div className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
                           1. Ukur 3-Kawat ({selectedRow.designation})
                         </span>
-                        <span className="font-mono text-[11px] text-slate-500">
+                        <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
                           dw = {selectedRow.bestWireSize.toFixed(3)} mm
                         </span>
                       </div>
@@ -1971,11 +2018,11 @@ export default function App() {
                           }}
                           className={`w-full px-2.5 py-1 font-mono text-sm font-semibold rounded border focus:outline-none ${
                             activeCheck.isOutOfRange
-                              ? 'bg-rose-50 border-rose-400 text-rose-950'
-                              : 'bg-emerald-50/70 border-emerald-400 text-emerald-950'
+                              ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-400 dark:border-rose-700 text-rose-950 dark:text-rose-200'
+                              : 'bg-emerald-50/70 dark:bg-emerald-950/50 border-emerald-400 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200'
                           }`}
                         />
-                        <span className="font-mono text-slate-600 shrink-0">
+                        <span className="font-mono text-slate-600 dark:text-slate-400 shrink-0">
                           mm
                         </span>
                       </div>
@@ -1990,7 +2037,7 @@ export default function App() {
                               ),
                             }))
                           }
-                          className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-300"
+                          className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded border border-slate-300 dark:border-slate-700"
                         >
                           -0.03 mm
                         </button>
@@ -2002,7 +2049,7 @@ export default function App() {
                               [selectedRow.id]: selectedRow.wireMTarget7e,
                             }))
                           }
-                          className="px-1.5 py-0.5 text-[10px] font-mono bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded border border-emerald-200"
+                          className="px-1.5 py-0.5 text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded border border-emerald-200 dark:border-emerald-800"
                         >
                           Target 7e ({selectedRow.wireMTarget7e.toFixed(3)})
                         </button>
@@ -2014,7 +2061,7 @@ export default function App() {
                               [selectedRow.id]: selectedRow.measureOverWires,
                             }))
                           }
-                          className="px-1.5 py-0.5 text-[10px] font-mono bg-rose-50 text-rose-800 hover:bg-rose-100 rounded border border-rose-200"
+                          className="px-1.5 py-0.5 text-[10px] font-mono bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded border border-rose-200 dark:border-rose-800"
                         >
                           Dasar d2 ({selectedRow.measureOverWires.toFixed(3)})
                         </button>
@@ -2028,7 +2075,7 @@ export default function App() {
                               ),
                             }))
                           }
-                          className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-300"
+                          className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded border border-slate-300 dark:border-slate-700"
                         >
                           +0.03 mm
                         </button>
@@ -2036,15 +2083,15 @@ export default function App() {
                     </div>
 
                     {/* Box 2: 3-Wire Go/No-Go Range for 7e */}
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-md space-y-1">
-                      <div className="text-slate-600 font-medium">
+                    <div className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md space-y-1">
+                      <div className="text-slate-600 dark:text-slate-400 font-medium">
                         2. Rentang Batas 3-Kawat Kelas 7e (Go/No-Go)
                       </div>
-                      <div className="font-mono text-sm font-semibold text-slate-900">
+                      <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {selectedRow.wireMMin7e.toFixed(3)} ..{' '}
                         {selectedRow.wireMMax7e.toFixed(3)} mm
                       </div>
-                      <div className="font-mono text-[11px] text-slate-500">
+                      <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
                         Lebar Tol Td2(7e) ={' '}
                         {Math.round(
                           (selectedRow.wireMMax7e - selectedRow.wireMMin7e) *
@@ -2056,14 +2103,14 @@ export default function App() {
                     </div>
 
                     {/* Box 3: Inferred Pitch Diameter d2_ukur vs 7e/7H Limits */}
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-md space-y-1">
-                      <div className="text-slate-600 font-medium">
+                    <div className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md space-y-1">
+                      <div className="text-slate-600 dark:text-slate-400 font-medium">
                         3. Diameter Pitch Aktual (d2_ukur) vs 7e / 7H
                       </div>
-                      <div className="font-mono text-sm font-semibold text-slate-900">
+                      <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">
                         d2_ukur = {activeCheck.inferredD2.toFixed(3)} mm
                       </div>
-                      <div className="font-mono text-[11px] text-slate-500">
+                      <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
                         Batas Baut 7e: {selectedRow.d2Min7e.toFixed(3)}..
                         {selectedRow.d2Max7e.toFixed(3)} · Mur 7H:{' '}
                         {selectedRow.D2Min7H.toFixed(3)}..
@@ -2075,8 +2122,8 @@ export default function App() {
                     <div
                       className={`p-2.5 rounded-md border flex flex-col justify-between ${
                         activeCheck.isOutOfRange
-                          ? 'bg-rose-100/90 border-rose-300 text-rose-950'
-                          : 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+                          ? 'bg-rose-100/90 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-200'
+                          : 'bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -2107,13 +2154,13 @@ export default function App() {
             })()}
 
             {/* HIGH-DENSITY SPREADSHEET GRID */}
-            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <div className="overflow-x-auto max-h-[560px] overflow-y-auto">
                 <table className="w-full border-collapse text-xs">
-                  <thead className="sticky top-0 z-20 bg-slate-100 text-slate-700 border-b border-slate-300 select-none">
+                  <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700 select-none">
                     {/* Row 1 of Header: Excel/Sheets Column Letters */}
-                    <tr className="bg-slate-200/70 text-[11px] font-mono text-slate-500 border-b border-slate-300">
-                      <th className="w-12 py-1 px-2 text-center border-r border-slate-300 sticky left-0 bg-slate-200 z-30">
+                    <tr className="bg-slate-200/70 dark:bg-slate-900 text-[11px] font-mono text-slate-500 dark:text-slate-400 border-b border-slate-300 dark:border-slate-700">
+                      <th className="w-12 py-1 px-2 text-center border-r border-slate-300 dark:border-slate-700 sticky left-0 bg-slate-200 dark:bg-slate-900 z-30">
                         #
                       </th>
                       {SPREADSHEET_COLUMNS.filter((c) =>
@@ -2122,27 +2169,27 @@ export default function App() {
                         <th
                           key={col.colLetter}
                           onClick={() => setSelectedColLetter(col.colLetter)}
-                          className={`py-1 px-2.5 text-center border-r border-slate-300 cursor-pointer transition-colors ${
+                          className={`py-1 px-2.5 text-center border-r border-slate-300 dark:border-slate-700 cursor-pointer transition-colors ${
                             col.colLetter === 'A'
-                              ? 'sticky left-12 z-30 bg-slate-200'
+                              ? 'sticky left-12 z-30 bg-slate-200 dark:bg-slate-900'
                               : ''
                           } ${
                             selectedColLetter === col.colLetter
-                              ? 'bg-blue-100 text-blue-900 font-bold'
-                              : 'hover:bg-slate-300/60'
+                              ? 'bg-blue-100 dark:bg-[#172554] text-blue-900 dark:text-blue-200 font-bold'
+                              : 'hover:bg-slate-300/60 dark:hover:bg-slate-800'
                           }`}
                         >
                           {col.colLetter}
                         </th>
                       ))}
-                      <th className="py-1 px-2.5 text-center bg-slate-200/70">
+                      <th className="py-1 px-2.5 text-center bg-slate-200/70 dark:bg-slate-900">
                         Aksi Proyek
                       </th>
                     </tr>
 
                     {/* Row 2 of Header: Engineering Parameter Names & Symbols */}
                     <tr>
-                      <th className="py-2 px-2 text-center border-r border-slate-300 sticky left-0 bg-slate-100 z-30 font-mono text-slate-500">
+                      <th className="py-2 px-2 text-center border-r border-slate-300 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-30 font-mono text-slate-500 dark:text-slate-400">
                         Baris
                       </th>
                       {SPREADSHEET_COLUMNS.filter((c) =>
@@ -2151,37 +2198,37 @@ export default function App() {
                         <th
                           key={col.key}
                           onClick={() => setSelectedColLetter(col.colLetter)}
-                          className={`py-2 px-2.5 border-r border-slate-200 whitespace-nowrap cursor-pointer ${
+                          className={`py-2 px-2.5 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap cursor-pointer ${
                             col.colLetter === 'A'
-                              ? 'sticky left-12 z-30 bg-slate-100 text-left'
+                              ? 'sticky left-12 z-30 bg-slate-100 dark:bg-slate-800 text-left'
                               : 'text-right'
                           } ${
                             selectedColLetter === col.colLetter
-                              ? 'bg-blue-50/90 text-blue-950'
+                              ? 'bg-blue-50/90 dark:bg-[#172554] text-blue-950 dark:text-blue-100'
                               : ''
                           }`}
                         >
-                          <div className="font-semibold text-slate-900">
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">
                             {col.label}
                           </div>
-                          <div className="text-[11px] font-mono text-slate-500 font-normal">
+                          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-normal">
                             {col.symbol}{' '}
                             {col.unit !== '-' ? `(${col.unit})` : ''}
                           </div>
                         </th>
                       ))}
-                      <th className="py-2 px-2.5 text-center font-semibold text-slate-900 whitespace-nowrap">
+                      <th className="py-2 px-2.5 text-center font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                         Salin ke Proyek
                       </th>
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-slate-200 font-mono tabular-nums">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-mono tabular-nums">
                     {visibleStandardRows.length === 0 ? (
                       <tr>
                         <td
                           colSpan={24}
-                          className="py-10 text-center font-sans text-slate-500"
+                          className="py-10 text-center font-sans text-slate-500 dark:text-slate-400"
                         >
                           Tidak ada ukuran ulir TR yang cocok dengan filter saat ini.{' '}
                           <button
@@ -2193,7 +2240,7 @@ export default function App() {
                               setExactDiameterFilter('all');
                               setExactPitchFilter('all');
                             }}
-                            className="text-blue-600 underline font-medium ml-1"
+                            className="text-blue-600 dark:text-blue-400 underline font-medium ml-1"
                           >
                             Reset filter
                           </button>
@@ -2221,9 +2268,9 @@ export default function App() {
                                 setSelectedColLetter(colLetter);
                                 setSelectedRowNumber(rowNum);
                               }}
-                              className={`py-1.5 px-2.5 border-r border-slate-200/80 whitespace-nowrap cursor-pointer transition-colors ${extraClass} ${
+                              className={`py-1.5 px-2.5 border-r border-slate-200/80 dark:border-slate-800 whitespace-nowrap cursor-pointer transition-colors ${extraClass} ${
                                 isSelectedCell
-                                  ? 'ring-2 ring-inset ring-blue-600 bg-blue-50/90 font-semibold text-blue-950'
+                                  ? 'ring-2 ring-inset ring-blue-600 dark:ring-blue-400 bg-blue-50/90 dark:bg-[#172554] font-semibold text-blue-950 dark:text-blue-100'
                                   : ''
                               }`}
                             >
@@ -2237,35 +2284,35 @@ export default function App() {
                             key={row.id}
                             className={`transition-colors ${
                               isSelectedRow
-                                ? 'bg-blue-50/40'
+                                ? 'bg-blue-50/40 dark:bg-blue-950/30'
                                 : row.series === 1
-                                ? 'bg-white hover:bg-slate-50'
-                                : 'bg-slate-50/40 hover:bg-slate-100/60'
+                                ? 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/70'
+                                : 'bg-slate-50/40 dark:bg-slate-950/60 hover:bg-slate-100/60 dark:hover:bg-slate-800/70'
                             }`}
                           >
-                            {/* Row Number Header */}
+                            {/* Row Number Header (opaque bg for horizontal scroll) */}
                             <td
                               onClick={() => {
                                 setSelectedRowId(row.id);
                                 setSelectedRowNumber(rowNum);
                               }}
-                              className={`py-1.5 px-2 text-center border-r border-slate-300 sticky left-0 z-10 cursor-pointer select-none text-[11px] ${
+                              className={`py-1.5 px-2 text-center border-r border-slate-300 dark:border-slate-700 sticky left-0 z-10 cursor-pointer select-none text-[11px] ${
                                 isSelectedRow
                                   ? 'bg-blue-600 text-white font-semibold'
-                                  : 'bg-slate-100 text-slate-500'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                               }`}
                             >
                               {rowNum}
                             </td>
 
-                            {/* A: Designation */}
+                            {/* A: Designation (opaque bg for sticky column) */}
                             {renderCell(
                               'A',
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-slate-900">
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">
                                   {row.designation}
                                 </span>
-                                <span className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-slate-100 text-slate-600 border border-slate-200">
+                                <span className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                                   {row.threadType === 'BUTTRESS_S'
                                     ? 'S 3°/30°'
                                     : row.threadType === 'SQ'
@@ -2279,7 +2326,9 @@ export default function App() {
                                 </span>
                               </div>,
                               `sticky left-12 z-10 text-left ${
-                                isSelectedRow ? 'bg-blue-50' : 'bg-white'
+                                isSelectedRow
+                                  ? 'bg-blue-50 dark:bg-[#172554]'
+                                  : 'bg-white dark:bg-slate-900'
                               }`
                             )}
 
@@ -2289,8 +2338,8 @@ export default function App() {
                               <span
                                 className={
                                   row.series === 1
-                                    ? 'text-blue-700 font-semibold'
-                                    : 'text-slate-500'
+                                    ? 'text-blue-700 dark:text-blue-400 font-semibold'
+                                    : 'text-slate-500 dark:text-slate-400'
                                 }
                               >
                                 S{row.series}
@@ -2302,107 +2351,107 @@ export default function App() {
                             {renderCell(
                               'C',
                               row.d.toFixed(2),
-                              'text-right font-medium text-slate-900'
+                              'text-right font-medium text-slate-900 dark:text-slate-100'
                             )}
 
                             {/* D: P */}
                             {renderCell(
                               'D',
                               row.p.toFixed(2),
-                              'text-right font-medium text-slate-900'
+                              'text-right font-medium text-slate-900 dark:text-slate-100'
                             )}
 
                             {/* E: Ph */}
                             {renderCell(
                               'E',
                               row.ph.toFixed(2),
-                              'text-right text-slate-700'
+                              'text-right text-slate-700 dark:text-slate-300'
                             )}
 
                             {/* F: d2 = D2 */}
                             {renderCell(
                               'F',
                               row.d2.toFixed(3),
-                              'text-right font-medium text-emerald-700'
+                              'text-right font-medium text-emerald-700 dark:text-emerald-400'
                             )}
 
                             {/* G: d3 */}
                             {renderCell(
                               'G',
                               row.d3.toFixed(3),
-                              'text-right text-blue-700'
+                              'text-right text-blue-700 dark:text-blue-400'
                             )}
 
                             {/* H: D1 (Tap Drill) */}
                             {renderCell(
                               'H',
                               row.D1.toFixed(3),
-                              'text-right font-medium text-amber-800'
+                              'text-right font-medium text-amber-800 dark:text-amber-400'
                             )}
 
                             {/* I: D4 */}
                             {renderCell(
                               'I',
                               row.D4.toFixed(3),
-                              'text-right text-slate-700'
+                              'text-right text-slate-700 dark:text-slate-300'
                             )}
 
                             {/* J: H1 */}
                             {renderCell(
                               'J',
                               row.H1.toFixed(3),
-                              'text-right text-slate-700'
+                              'text-right text-slate-700 dark:text-slate-300'
                             )}
 
                             {/* K: h3 */}
                             {renderCell(
                               'K',
                               row.h3.toFixed(3),
-                              'text-right text-slate-900'
+                              'text-right text-slate-900 dark:text-slate-100'
                             )}
 
                             {/* L: ac */}
                             {renderCell(
                               'L',
                               row.ac.toFixed(2),
-                              'text-right text-slate-600'
+                              'text-right text-slate-600 dark:text-slate-400'
                             )}
 
                             {/* M: f */}
                             {renderCell(
                               'M',
                               row.f.toFixed(3),
-                              'text-right text-slate-700'
+                              'text-right text-slate-700 dark:text-slate-300'
                             )}
 
                             {/* N: w (Tool tip width) */}
                             {renderCell(
                               'N',
                               row.w.toFixed(3),
-                              'text-right font-medium text-slate-900'
+                              'text-right font-medium text-slate-900 dark:text-slate-100'
                             )}
 
                             {/* O: d2 min..max (Highlighted automatically when 3-wire M is outside 7e/7H Go/No-Go limits) */}
                             {(() => {
                               const wireCheck = evaluate3WireGoNoGo7e7H(row);
                               const tolHighlightClass = !isToleranceCheckEnabled
-                                ? 'text-right text-slate-600 text-[11px]'
+                                ? 'text-right text-slate-600 dark:text-slate-400 text-[11px]'
                                 : wireCheck.isOutOfRange
-                                ? 'text-right bg-rose-100/95 text-rose-950 font-semibold ring-1 ring-inset ring-rose-300 text-[11px]'
-                                : 'text-right bg-emerald-50/75 text-emerald-950 text-[11px]';
+                                ? 'text-right bg-rose-100/95 dark:bg-rose-950/60 text-rose-950 dark:text-rose-200 font-semibold ring-1 ring-inset ring-rose-300 dark:ring-rose-800 text-[11px]'
+                                : 'text-right bg-emerald-50/75 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 text-[11px]';
 
                               const nutHighlightClass = !isToleranceCheckEnabled
-                                ? 'text-right text-slate-600 text-[11px]'
+                                ? 'text-right text-slate-600 dark:text-slate-400 text-[11px]'
                                 : wireCheck.isOutOfRange
-                                ? 'text-right bg-rose-100/80 text-rose-950 font-semibold ring-1 ring-inset ring-rose-200 text-[11px]'
-                                : 'text-right bg-emerald-50/60 text-emerald-900 text-[11px]';
+                                ? 'text-right bg-rose-100/80 dark:bg-rose-950/50 text-rose-950 dark:text-rose-200 font-semibold ring-1 ring-inset ring-rose-200 dark:ring-rose-800 text-[11px]'
+                                : 'text-right bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 text-[11px]';
 
                               const wireCellHighlightClass =
                                 !isToleranceCheckEnabled
-                                  ? 'text-right font-medium text-slate-900'
+                                  ? 'text-right font-medium text-slate-900 dark:text-slate-100'
                                   : wireCheck.isOutOfRange
-                                  ? 'text-right bg-rose-100/95 text-rose-950 font-semibold ring-1 ring-inset ring-rose-300'
-                                  : 'text-right bg-emerald-50/75 text-emerald-950 font-medium';
+                                  ? 'text-right bg-rose-100/95 dark:bg-rose-950/60 text-rose-950 dark:text-rose-200 font-semibold ring-1 ring-inset ring-rose-300 dark:ring-rose-800'
+                                  : 'text-right bg-emerald-50/75 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-medium';
 
                               return (
                                 <>
@@ -2434,8 +2483,8 @@ export default function App() {
                                         <span
                                           className={`text-[10px] ${
                                             wireCheck.isOutOfRange
-                                              ? 'text-rose-800 font-semibold'
-                                              : 'text-emerald-700'
+                                              ? 'text-rose-800 dark:text-rose-300 font-semibold'
+                                              : 'text-emerald-700 dark:text-emerald-400'
                                           }`}
                                         >
                                           d2_ukur={wireCheck.inferredD2.toFixed(3)}{' '}
@@ -2474,8 +2523,8 @@ export default function App() {
                                         <span
                                           className={`text-[10px] ${
                                             wireCheck.isOutOfRange
-                                              ? 'text-rose-800'
-                                              : 'text-emerald-700'
+                                              ? 'text-rose-800 dark:text-rose-300'
+                                              : 'text-emerald-700 dark:text-emerald-400'
                                           }`}
                                         >
                                           Celah={(
@@ -2492,7 +2541,7 @@ export default function App() {
                                   {renderCell(
                                     'Q',
                                     row.bestWireSize.toFixed(3),
-                                    'text-right text-slate-700'
+                                    'text-right text-slate-700 dark:text-slate-300'
                                   )}
 
                                   {/* R: M (Over 3 wires — Editable & Highlighted against 7e Go/No-Go range) */}
@@ -2575,10 +2624,10 @@ export default function App() {
                                           title="Ketik nilai pengukuran 3-kawat aktual (mm) untuk menguji batas Go/No-Go 7e/7H"
                                           className={`w-20 px-1.5 py-0.5 text-right font-mono text-xs rounded border focus:outline-none ${
                                             !isToleranceCheckEnabled
-                                              ? 'bg-white border-slate-300 text-slate-900'
+                                              ? 'bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100'
                                               : wireCheck.isOutOfRange
-                                              ? 'bg-white border-rose-500 text-rose-950 font-bold'
-                                              : 'bg-white border-emerald-400 text-emerald-950 font-semibold'
+                                              ? 'bg-white dark:bg-slate-950 border-rose-500 dark:border-rose-600 text-rose-950 dark:text-rose-200 font-bold'
+                                              : 'bg-white dark:bg-slate-950 border-emerald-400 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 font-semibold'
                                           }`}
                                         />
                                       </div>
@@ -2586,8 +2635,8 @@ export default function App() {
                                         className={`text-[10px] ${
                                           isToleranceCheckEnabled &&
                                           wireCheck.isOutOfRange
-                                            ? 'text-rose-800 font-semibold'
-                                            : 'text-slate-500'
+                                            ? 'text-rose-800 dark:text-rose-300 font-semibold'
+                                            : 'text-slate-500 dark:text-slate-400'
                                         }`}
                                       >
                                         7e: {row.wireMMin7e.toFixed(3)}..
@@ -2604,28 +2653,28 @@ export default function App() {
                             {renderCell(
                               'S',
                               `${row.leadAngleDeg.toFixed(2)}°`,
-                              'text-right text-slate-700'
+                              'text-right text-slate-700 dark:text-slate-300'
                             )}
 
                             {/* T: Core Shear Area Ac */}
                             {renderCell(
                               'T',
                               row.coreAreaMm2.toFixed(2),
-                              'text-right font-medium text-slate-900'
+                              'text-right font-medium text-slate-900 dark:text-slate-100'
                             )}
 
                             {/* U: Max Static Load C45 */}
                             {renderCell(
                               'U',
                               row.maxStaticLoadC45Kn.toFixed(2),
-                              'text-right font-semibold text-blue-700'
+                              'text-right font-semibold text-blue-700 dark:text-blue-400'
                             )}
 
                             {/* V: Max Static Load Bronze */}
                             {renderCell(
                               'V',
                               row.maxStaticLoadBronzeKn.toFixed(2),
-                              'text-right font-semibold text-amber-800'
+                              'text-right font-semibold text-amber-800 dark:text-amber-400'
                             )}
 
                             {/* Action: Add to Project */}
@@ -2637,7 +2686,7 @@ export default function App() {
                                     handleAddRowToProject(row, 'C45')
                                   }
                                   title="Tambahkan sebagai Baja C45 ke Proyek"
-                                  className="px-1.5 py-0.5 text-[11px] font-medium text-blue-700 hover:text-white hover:bg-blue-600 border border-blue-200 rounded transition-colors"
+                                  className="px-1.5 py-0.5 text-[11px] font-medium text-blue-700 dark:text-blue-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 border border-blue-200 dark:border-blue-800 rounded transition-colors"
                                 >
                                   +C45
                                 </button>
@@ -2647,7 +2696,7 @@ export default function App() {
                                     handleAddRowToProject(row, 'BRONZE')
                                   }
                                   title="Tambahkan sebagai Perunggu CuSn12 ke Proyek"
-                                  className="px-1.5 py-0.5 text-[11px] font-medium text-amber-800 hover:text-white hover:bg-amber-600 border border-amber-200 rounded transition-colors"
+                                  className="px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300 hover:text-white dark:hover:text-white hover:bg-amber-600 dark:hover:bg-amber-600 border border-amber-200 dark:border-amber-800 rounded transition-colors"
                                 >
                                   +Perunggu
                                 </button>
@@ -2677,16 +2726,16 @@ export default function App() {
         {activeView === 'project' && (
           <div className="space-y-5">
             {/* Engineering Breakdown Card: C45 vs Perunggu Core Shear Formula for Active Row */}
-            <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     Analisis Beban Statis Aksial Maksimum Berdasarkan Luas Penampang Geser Inti — {selectedRow.designation}
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Rumus Dasar Geser Inti: <code className="font-mono text-slate-800">A_c = (π / 4) × d3²</code> dan{' '}
-                    <code className="font-mono text-slate-800">F_maks = A_c × τ_izin</code> (dengan diameter inti baut{' '}
-                    <code className="font-mono text-blue-700">d3 = {selectedRow.d3.toFixed(3)} mm</code>)
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Rumus Dasar Geser Inti: <code className="font-mono text-slate-800 dark:text-slate-200">A_c = (π / 4) × d3²</code> dan{' '}
+                    <code className="font-mono text-slate-800 dark:text-slate-200">F_maks = A_c × τ_izin</code> (dengan diameter inti baut{' '}
+                    <code className="font-mono text-blue-700 dark:text-blue-400">d3 = {selectedRow.d3.toFixed(3)} mm</code>)
                   </p>
                 </div>
 
@@ -2694,35 +2743,35 @@ export default function App() {
                   <button
                     type="button"
                     onClick={handleManualSaveProject}
-                    className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors whitespace-nowrap"
                   >
                     Simpan Proyek
                   </button>
                   <button
                     type="button"
                     onClick={handlePullProjectFromDatabase}
-                    className="px-3 py-1.5 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors whitespace-nowrap"
                   >
                     Muat Data Proyek
                   </button>
                   <button
                     type="button"
                     onClick={handleResetProjectToDefault}
-                    className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
                   >
                     Reset Standar
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAddComparisonPairToProject(selectedRow)}
-                    className="px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 transition-colors whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
                   >
                     + Duplikat Komparasi C45 vs Perunggu ({selectedRow.designation})
                   </button>
                   <button
                     type="button"
                     onClick={handleExportPdfReport}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 rounded-md hover:bg-slate-800 transition-colors whitespace-nowrap"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 dark:bg-blue-600 rounded-md hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors whitespace-nowrap"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     Ekspor Laporan Teknis PDF
@@ -2731,9 +2780,9 @@ export default function App() {
               </div>
 
               {/* PDF Report Letterhead Metadata Inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 pb-2 border-b border-slate-100 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 pb-2 border-b border-slate-100 dark:border-slate-800 text-xs">
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                  <label className="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Judul Proyek pada Kop Surat PDF
                   </label>
                   <input
@@ -2741,11 +2790,11 @@ export default function App() {
                     value={reportProjectName}
                     onChange={(e) => setReportProjectName(e.target.value)}
                     placeholder="Contoh: Spindel Pintu Air & Mesin Bubut"
-                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                  <label className="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Disusun / Diverifikasi Oleh
                   </label>
                   <input
@@ -2753,16 +2802,16 @@ export default function App() {
                     value={reportPreparedBy}
                     onChange={(e) => setReportPreparedBy(e.target.value)}
                     placeholder="Contoh: Divisi Engineering & QC"
-                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div className="flex items-end">
-                  <div className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-600 flex items-center justify-between">
+                  <div className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
                     <span>Format: A4 Landscape · Kop Thread Calculation</span>
                     <button
                       type="button"
                       onClick={handleExportPdfReport}
-                      className="font-semibold text-blue-600 hover:underline ml-2 whitespace-nowrap"
+                      className="font-semibold text-blue-600 dark:text-blue-400 hover:underline ml-2 whitespace-nowrap"
                     >
                       Unduh PDF ({projectRows.length} Baris)
                     </button>
@@ -2772,62 +2821,62 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
                 {/* Box 1: Core Shear Area */}
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-md">
-                  <div className="text-slate-500">
+                <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md">
+                  <div className="text-slate-500 dark:text-slate-400">
                     1. Luas Penampang Geser Inti (A<sub>c</sub>)
                   </div>
-                  <div className="font-mono text-base font-semibold text-slate-900 mt-1">
+                  <div className="font-mono text-base font-semibold text-slate-900 dark:text-slate-100 mt-1">
                     {selectedRow.coreAreaMm2.toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}{' '}
                     mm²
                   </div>
-                  <div className="font-mono text-[11px] text-slate-500 mt-1">
+                  <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                     = (π/4) × ({selectedRow.d3.toFixed(3)})²
                   </div>
                 </div>
 
                 {/* Box 2: Baja C45 Max Static Axial Load */}
-                <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-md">
-                  <div className="text-blue-900 font-medium">
+                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/35 border border-blue-200 dark:border-blue-800 rounded-md">
+                  <div className="text-blue-900 dark:text-blue-200 font-medium">
                     2. Beban Statis Maksimum — Baja C45
                   </div>
-                  <div className="font-mono text-base font-semibold text-blue-700 mt-1">
+                  <div className="font-mono text-base font-semibold text-blue-700 dark:text-blue-400 mt-1">
                     {selectedRow.maxStaticLoadC45Kn.toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}{' '}
                     kN{' '}
-                    <span className="text-xs font-normal text-slate-600">
+                    <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
                       (
                       {(selectedRow.maxStaticLoadC45Kn / 9.80665).toFixed(2)}{' '}
                       Ton)
                     </span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-600 mt-1">
+                  <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                     τ_izin C45 = 65 MPa · R_e = 340 MPa
                   </div>
                 </div>
 
                 {/* Box 3: Perunggu CuSn12 Max Static Axial Load */}
-                <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-md">
-                  <div className="text-amber-950 font-medium">
+                <div className="p-3 bg-amber-50/60 dark:bg-amber-950/35 border border-amber-200 dark:border-amber-800 rounded-md">
+                  <div className="text-amber-950 dark:text-amber-200 font-medium">
                     3. Beban Statis Maksimum — Perunggu
                   </div>
-                  <div className="font-mono text-base font-semibold text-amber-800 mt-1">
+                  <div className="font-mono text-base font-semibold text-amber-800 dark:text-amber-400 mt-1">
                     {selectedRow.maxStaticLoadBronzeKn.toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}{' '}
                     kN{' '}
-                    <span className="text-xs font-normal text-slate-600">
+                    <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
                       (
                       {(selectedRow.maxStaticLoadBronzeKn / 9.80665).toFixed(2)}{' '}
                       Ton)
                     </span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-600 mt-1">
+                  <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                     τ_izin Perunggu = 30 MPa · R_p0.2 = 150 MPa
                   </div>
                 </div>
@@ -2836,16 +2885,16 @@ export default function App() {
                 <div
                   className={`p-3 rounded-md border ${
                     selectedRow.isLoadSafe
-                      ? 'bg-emerald-50/60 border-emerald-200'
-                      : 'bg-red-50/70 border-red-200'
+                      ? 'bg-emerald-50/60 dark:bg-emerald-950/35 border-emerald-200 dark:border-emerald-800'
+                      : 'bg-red-50/70 dark:bg-red-950/35 border-red-200 dark:border-red-800'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
                       className={`font-medium ${
                         selectedRow.isLoadSafe
-                          ? 'text-emerald-950'
-                          : 'text-red-950'
+                          ? 'text-emerald-950 dark:text-emerald-200'
+                          : 'text-red-950 dark:text-red-200'
                       }`}
                     >
                       4. Status Baris Aktif (
@@ -2864,8 +2913,8 @@ export default function App() {
                       <span
                         className={
                           selectedRow.isLoadSafe
-                            ? 'text-emerald-800'
-                            : 'text-red-700'
+                            ? 'text-emerald-800 dark:text-emerald-300'
+                            : 'text-red-700 dark:text-red-300'
                         }
                       >
                         {selectedRow.isLoadSafe ? 'AMAN' : 'OVERLOAD'}
@@ -2875,39 +2924,39 @@ export default function App() {
                   <div
                     className={`font-mono text-base font-semibold mt-1 ${
                       selectedRow.isLoadSafe
-                        ? 'text-emerald-800'
-                        : 'text-red-700'
+                        ? 'text-emerald-800 dark:text-emerald-300'
+                        : 'text-red-700 dark:text-red-300'
                     }`}
                   >
                     F = {selectedRow.appliedLoadKn.toFixed(2)} kN{' '}
-                    <span className="text-xs font-normal text-slate-600">
+                    <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
                       / Fmaks = {selectedRow.maxStaticLoadActiveKn.toFixed(2)} kN
                     </span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-600 mt-1">
+                  <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                      Beban Kerja: {selectedRow.loadRatioPct.toFixed(1)}% dari kapasitas {THREAD_MATERIAL_SPECS[selectedRow.materialGrade].shortLabel}
                   </div>
                 </div>
               </div>
 
               {/* Tightening Torque Estimation Sub-Panel Based on Thread Friction Coefficient (mu) */}
-              <div className="pt-3 border-t border-slate-200 space-y-2.5">
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h3 className="text-xs font-semibold text-slate-900">
+                    <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                       Estimasi Torsi Pengencangan Ulir (Tightening Torque) Berdasarkan Koefisien Gesek (μ) — {selectedRow.designation} ({THREAD_MATERIAL_SPECS[selectedRow.materialGrade].shortLabel})
                     </h3>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Rumus Ulir Trapesium 30° (β = 15°):{' '}
-                      <code className="font-mono text-slate-800">
+                      <code className="font-mono text-slate-800 dark:text-slate-200">
                         T = 0.5 × F × d2 × tan(λ + ρ&apos;)
                       </code>{' '}
                       dengan{' '}
-                      <code className="font-mono text-slate-800">
+                      <code className="font-mono text-slate-800 dark:text-slate-200">
                         ρ&apos; = arctan(μ / cos 15°)
                       </code>{' '}
                       dan{' '}
-                      <code className="font-mono text-blue-700">
+                      <code className="font-mono text-blue-700 dark:text-blue-400">
                         d2 = {selectedRow.d2.toFixed(3)} mm
                       </code>
                     </p>
@@ -2915,7 +2964,7 @@ export default function App() {
 
                   {/* Quick Friction Coefficient Preset Switcher for Selected Project Row */}
                   <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                    <span className="text-slate-500 font-medium">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">
                       Preset μ Baris Aktif:
                     </span>
                     {[
@@ -2935,8 +2984,8 @@ export default function App() {
                         }
                         className={`px-2 py-0.5 font-mono rounded border transition-colors ${
                           Math.abs(selectedRow.frictionMu - preset.mu) < 0.002
-                            ? 'bg-slate-900 text-white border-slate-900 font-semibold'
-                            : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                            ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600 font-semibold'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         μ={preset.mu.toFixed(2)}
@@ -2946,67 +2995,67 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md">
-                    <div className="text-slate-500">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md">
+                    <div className="text-slate-500 dark:text-slate-400">
                       Koefisien Gesek Ulir Aktif (μ &amp; μ&apos;)
                     </div>
-                    <div className="font-mono text-sm font-semibold text-slate-900 mt-0.5">
+                    <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
                       μ = {selectedRow.frictionMu.toFixed(2)}{' '}
-                      <span className="text-xs font-normal text-slate-600">
+                      <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
                         (μ&apos; = {selectedRow.effectiveFrictionMuPrime.toFixed(3)})
                       </span>
                     </div>
-                    <div className="font-mono text-[11px] text-slate-500 mt-0.5">
+                    <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Sudut Gesek ρ&apos; = {selectedRow.frictionAngleDeg}° · Heliks λ = {selectedRow.leadAngleDeg}°
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-indigo-50/60 border border-indigo-200 rounded-md">
-                    <div className="text-indigo-950 font-medium">
+                  <div className="p-2.5 bg-indigo-50/60 dark:bg-indigo-950/35 border border-indigo-200 dark:border-indigo-800 rounded-md">
+                    <div className="text-indigo-950 dark:text-indigo-200 font-medium">
                       Torsi Pengencangan Kerja (T<sub>kerja</sub>)
                     </div>
-                    <div className="font-mono text-sm font-semibold text-indigo-800 mt-0.5">
+                    <div className="font-mono text-sm font-semibold text-indigo-800 dark:text-indigo-300 mt-0.5">
                       {selectedRow.tighteningTorqueWorkNm.toLocaleString('id-ID', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}{' '}
                       N·m
                     </div>
-                    <div className="font-mono text-[11px] text-slate-600 mt-0.5">
+                    <div className="font-mono text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
                       Pada beban kerja F = {selectedRow.appliedLoadKn.toFixed(2)} kN
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md">
-                    <div className="text-slate-700 font-medium">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md">
+                    <div className="text-slate-700 dark:text-slate-300 font-medium">
                       Torsi pada Kapasitas Izin Maks (T<sub>maks</sub>)
                     </div>
-                    <div className="font-mono text-sm font-semibold text-slate-900 mt-0.5">
+                    <div className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
                       {selectedRow.tighteningTorqueMaxNm.toLocaleString('id-ID', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}{' '}
                       N·m
                     </div>
-                    <div className="font-mono text-[11px] text-slate-500 mt-0.5">
+                    <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Pada Fmaks = {selectedRow.maxStaticLoadActiveKn.toFixed(2)} kN ({THREAD_MATERIAL_SPECS[selectedRow.materialGrade].shortLabel})
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md">
-                    <div className="text-slate-700 font-medium">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md">
+                    <div className="text-slate-700 dark:text-slate-300 font-medium">
                       Komparasi Torsi C45 vs Perunggu &amp; Efisiensi
                     </div>
-                    <div className="font-mono text-xs font-semibold text-slate-900 mt-1">
-                      <span className="text-blue-700">
+                    <div className="font-mono text-xs font-semibold text-slate-900 dark:text-slate-100 mt-1">
+                      <span className="text-blue-700 dark:text-blue-400">
                         C45 (μ=0.15): {selectedRow.tighteningTorqueC45WorkNm} N·m
                       </span>{' '}
                       ·{' '}
-                      <span className="text-amber-800">
+                      <span className="text-amber-800 dark:text-amber-400">
                         Brz (μ=0.10): {selectedRow.tighteningTorqueBronzeWorkNm} N·m
                       </span>
                     </div>
-                    <div className="font-mono text-[11px] text-slate-500 mt-0.5">
+                    <div className="font-mono text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Efisiensi η = {selectedRow.threadEfficiencyPct}% ·{' '}
                       {selectedRow.selfLocking
                         ? 'Self-Locking (λ ≤ ρ\')'
@@ -3025,19 +3074,20 @@ export default function App() {
                 setSelectedRowId(id);
                 setSelectedRowNumber(rowNum);
               }}
+              isDark={theme === 'dark'}
             />
 
             {/* Custom Thread Generator Form */}
             <form
               onSubmit={handleCreateCustomProjectRow}
-              className="bg-white border border-slate-200 rounded-lg p-4 space-y-3"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     Tambah Baris Ulir (Tr, Metrik M, Square Sq, Buttress S, ACME, UNC/UNF, BSW, Pipa) ke Lembar Kerja Proyek
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Pilih jenis standar ulir dan material (Baja C45 vs Perunggu CuSn12) untuk menghitung profil geometri, luas geser inti, beban statis, dan torsi secara otomatis.
                   </p>
                 </div>
@@ -3045,7 +3095,7 @@ export default function App() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-10 gap-3 pt-1">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Jenis Standar Ulir
                   </label>
                   <select
@@ -3055,7 +3105,7 @@ export default function App() {
                         e.target.value as ThreadStandardFamily
                       )
                     }
-                    className="w-full px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   >
                     <option value="TR">Tr 30° (Trapesium ISO)</option>
                     <option value="METRIC_M">M 60° (Metrik Segitiga)</option>
@@ -3068,7 +3118,7 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Dia. Luar d (mm)
                   </label>
                   <input
@@ -3077,11 +3127,11 @@ export default function App() {
                     min={4}
                     value={customD}
                     onChange={(e) => setCustomD(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Pitch P (mm)
                   </label>
                   <input
@@ -3090,11 +3140,11 @@ export default function App() {
                     min={0.5}
                     value={customP}
                     onChange={(e) => setCustomP(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Jumlah Start (n)
                   </label>
                   <input
@@ -3103,11 +3153,11 @@ export default function App() {
                     max={12}
                     value={customStarts}
                     onChange={(e) => setCustomStarts(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Material (C45 vs Perunggu)
                   </label>
                   <select
@@ -3119,7 +3169,7 @@ export default function App() {
                         THREAD_MATERIAL_SPECS[nextGrade].defaultFrictionMu
                       );
                     }}
-                    className="w-full px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   >
                     <option value="C45">Baja C45 (τ=65, μ=0.15)</option>
                     <option value="BRONZE">Perunggu CuSn12 (τ=30, μ=0.10)</option>
@@ -3131,7 +3181,7 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Beban Aksial F (kN)
                   </label>
                   <input
@@ -3142,11 +3192,11 @@ export default function App() {
                     onChange={(e) =>
                       setCustomAppliedLoadKn(Number(e.target.value))
                     }
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Koef. Gesek Ulir (μ)
                   </label>
                   <input
@@ -3158,11 +3208,11 @@ export default function App() {
                     onChange={(e) =>
                       setCustomFrictionMu(Number(e.target.value))
                     }
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Panjang Ulir (mm)
                   </label>
                   <input
@@ -3171,18 +3221,18 @@ export default function App() {
                     step={10}
                     value={customLength}
                     onChange={(e) => setCustomLength(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Catatan Komponen
                   </label>
                   <input
                     type="text"
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                   />
                 </div>
                 <div className="flex items-end">
@@ -3198,105 +3248,105 @@ export default function App() {
             </form>
 
             {/* Editable Project Spreadsheet Grid with Core Shear Area & C45 vs Bronze Max Static Load Columns */}
-            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-xs">
-                  <thead className="bg-slate-100 text-slate-700 border-b border-slate-300">
+                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
                     <tr>
-                      <th className="py-2 px-2 text-center border-r border-slate-300 font-mono text-slate-500">
+                      <th className="py-2 px-2 text-center border-r border-slate-300 dark:border-slate-700 font-mono text-slate-500 dark:text-slate-400">
                         #
                       </th>
-                      <th className="py-2 px-2.5 text-left border-r border-slate-200">
+                      <th className="py-2 px-2.5 text-left border-r border-slate-200 dark:border-slate-700">
                         Kode Ulir
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700">
                         d (mm)
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700">
                         P (mm)
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700">
                         Start
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700">
                         d3 Inti (mm)
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200 bg-slate-200/60">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700 bg-slate-200/60 dark:bg-slate-900">
                         <div>Luas Geser Inti</div>
-                        <div className="text-[10px] font-mono text-slate-500 font-normal">
+                        <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-normal">
                           Ac = (π/4)·d3² (mm²)
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200 bg-blue-50/70">
-                        <div className="text-blue-950">Fmaks C45</div>
-                        <div className="text-[10px] font-mono text-blue-700 font-normal">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700 bg-blue-50/70 dark:bg-blue-950/50">
+                        <div className="text-blue-950 dark:text-blue-200">Fmaks C45</div>
+                        <div className="text-[10px] font-mono text-blue-700 dark:text-blue-400 font-normal">
                           τ=65 MPa (kN)
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200 bg-amber-50/70">
-                        <div className="text-amber-950">Fmaks Perunggu</div>
-                        <div className="text-[10px] font-mono text-amber-800 font-normal">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700 bg-amber-50/70 dark:bg-amber-950/50">
+                        <div className="text-amber-950 dark:text-amber-200">Fmaks Perunggu</div>
+                        <div className="text-[10px] font-mono text-amber-800 dark:text-amber-400 font-normal">
                           τ=30 MPa (kN)
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-left border-r border-slate-200">
+                      <th className="py-2 px-2.5 text-left border-r border-slate-200 dark:border-slate-700">
                         Pilih Material Baris
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700">
                         τ_izin (MPa)
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200 bg-emerald-50/70">
-                        <div className="text-emerald-950">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-emerald-950/50">
+                        <div className="text-emerald-950 dark:text-emerald-200">
                           Beban Statis Izin
                         </div>
-                        <div className="text-[10px] font-mono text-emerald-800 font-normal">
+                        <div className="text-[10px] font-mono text-emerald-800 dark:text-emerald-400 font-normal">
                           Fmaks = Ac × τ_izin
                         </div>
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200 bg-slate-200/60">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700 bg-slate-200/60 dark:bg-slate-900">
                         <div>Beban Kerja F</div>
-                        <div className="text-[10px] font-mono text-slate-600 font-normal">
+                        <div className="text-[10px] font-mono text-slate-600 dark:text-slate-400 font-normal">
                           Aktual (kN) [Edit]
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-left border-r border-slate-200 bg-slate-200/60">
+                      <th className="py-2 px-2.5 text-left border-r border-slate-200 dark:border-slate-700 bg-slate-200/60 dark:bg-slate-900">
                         <div>Status Keamanan</div>
-                        <div className="text-[10px] font-mono text-slate-600 font-normal">
+                        <div className="text-[10px] font-mono text-slate-600 dark:text-slate-400 font-normal">
                           Indikator F ≤ Fmaks
                         </div>
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200 bg-indigo-50/70">
-                        <div className="text-indigo-950">Koef. Gesek μ</div>
-                        <div className="text-[10px] font-mono text-indigo-700 font-normal">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700 bg-indigo-50/70 dark:bg-indigo-950/50">
+                        <div className="text-indigo-950 dark:text-indigo-200">Koef. Gesek μ</div>
+                        <div className="text-[10px] font-mono text-indigo-700 dark:text-indigo-400 font-normal">
                           Ulir [Edit]
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200 bg-indigo-50/70">
-                        <div className="text-indigo-950">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700 bg-indigo-50/70 dark:bg-indigo-950/50">
+                        <div className="text-indigo-950 dark:text-indigo-200">
                           Torsi Pengencangan
                         </div>
-                        <div className="text-[10px] font-mono text-indigo-700 font-normal">
+                        <div className="text-[10px] font-mono text-indigo-700 dark:text-indigo-400 font-normal">
                           T = 0.5·F·d2·tan(λ+ρ&apos;)
                         </div>
                       </th>
-                      <th className="py-2 px-2.5 text-right border-r border-slate-200">
+                      <th className="py-2 px-2.5 text-right border-r border-slate-200 dark:border-slate-700">
                         D1 Bor Mur (mm)
                       </th>
-                      <th className="py-2 px-2 text-right border-r border-slate-200">
+                      <th className="py-2 px-2 text-right border-r border-slate-200 dark:border-slate-700">
                         Panjang (mm)
                       </th>
-                      <th className="py-2 px-2.5 text-left border-r border-slate-200">
+                      <th className="py-2 px-2.5 text-left border-r border-slate-200 dark:border-slate-700">
                         Catatan Proyek
                       </th>
                       <th className="py-2 px-2 text-center">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 font-mono tabular-nums">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-mono tabular-nums">
                     {projectRows.length === 0 ? (
                       <tr>
                         <td
                           colSpan={16}
-                          className="py-10 text-center font-sans text-slate-500"
+                          className="py-10 text-center font-sans text-slate-500 dark:text-slate-400"
                         >
                           Lembar Kerja Proyek masih kosong. Tambahkan ulir dari form di atas atau salin dari Tabel Standar ISO.
                         </td>
@@ -3319,20 +3369,20 @@ export default function App() {
                                 : 'opacity-100 translate-y-0'
                             } ${
                               isHighlighted
-                                ? 'bg-emerald-50/80'
+                                ? 'bg-emerald-50/80 dark:bg-emerald-950/40'
                                 : isSelected
-                                ? 'bg-blue-50/50'
-                                : 'bg-white hover:bg-slate-50'
+                                ? 'bg-blue-50/50 dark:bg-blue-950/30'
+                                : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/70'
                             }`}
                           >
-                            <td className="py-1.5 px-2 text-center border-r border-slate-300 bg-slate-100 text-slate-600">
+                            <td className="py-1.5 px-2 text-center border-r border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                               {idx + 1}
                             </td>
-                            <td className="py-1.5 px-2.5 font-semibold text-slate-900 border-r border-slate-200 whitespace-nowrap">
+                            <td className="py-1.5 px-2.5 font-semibold text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                               {row.designation}
                             </td>
                             {/* Editable d */}
-                            <td className="py-1 px-1.5 border-r border-slate-200">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="number"
                                 step="any"
@@ -3343,11 +3393,11 @@ export default function App() {
                                     d: Number(e.target.value),
                                   })
                                 }
-                                className="w-18 px-1.5 py-0.5 text-right bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                                className="w-18 px-1.5 py-0.5 text-right bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                               />
                             </td>
                             {/* Editable P */}
-                            <td className="py-1 px-1.5 border-r border-slate-200">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="number"
                                 step="any"
@@ -3358,11 +3408,11 @@ export default function App() {
                                     p: Number(e.target.value),
                                   })
                                 }
-                                className="w-14 px-1.5 py-0.5 text-right bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                                className="w-14 px-1.5 py-0.5 text-right bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                               />
                             </td>
                             {/* Editable Starts */}
-                            <td className="py-1 px-1.5 border-r border-slate-200">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="number"
                                 min={1}
@@ -3373,27 +3423,27 @@ export default function App() {
                                     starts: Number(e.target.value),
                                   })
                                 }
-                                className="w-11 px-1 py-0.5 text-right bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                                className="w-11 px-1 py-0.5 text-right bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                               />
                             </td>
                             {/* d3 Core Diameter */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 text-blue-700 font-medium">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 text-blue-700 dark:text-blue-400 font-medium">
                               {row.d3.toFixed(3)}
                             </td>
                             {/* Core Shear Area Ac = (pi/4)*d3^2 */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 font-semibold text-slate-900 bg-slate-50/80">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 font-semibold text-slate-900 dark:text-slate-100 bg-slate-50/80 dark:bg-slate-950/60">
                               {row.coreAreaMm2.toFixed(2)}
                             </td>
                             {/* Max Static Load C45 (kN) */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 font-semibold text-blue-700 bg-blue-50/30">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 font-semibold text-blue-700 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-950/25">
                               {row.maxStaticLoadC45Kn.toFixed(2)}
                             </td>
                             {/* Max Static Load Bronze (kN) */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 font-semibold text-amber-800 bg-amber-50/30">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 font-semibold text-amber-800 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/25">
                               {row.maxStaticLoadBronzeKn.toFixed(2)}
                             </td>
                             {/* Material Selector (C45 vs Bronze, etc.) */}
-                            <td className="py-1 px-1.5 border-r border-slate-200 font-sans">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800 font-sans">
                               <select
                                 value={row.materialGrade}
                                 onChange={(e) =>
@@ -3402,7 +3452,7 @@ export default function App() {
                                       .value as ThreadMaterialGrade,
                                   })
                                 }
-                                className="w-40 px-1.5 py-0.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600 font-medium text-slate-900"
+                                className="w-40 px-1.5 py-0.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 font-medium text-slate-900 dark:text-slate-100"
                               >
                                 <option value="C45">
                                   Baja C45 (τ=65 MPa)
@@ -3422,20 +3472,20 @@ export default function App() {
                               </select>
                             </td>
                             {/* Active Allowable Shear Stress tau_izin */}
-                            <td className="py-1.5 px-2 text-right border-r border-slate-200 text-slate-700">
+                            <td className="py-1.5 px-2 text-right border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
                               {row.allowableShearStressMpa}
                             </td>
                             {/* Active Max Static Axial Load (kN & Ton) */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 bg-emerald-50/40 whitespace-nowrap">
-                              <span className="font-semibold text-emerald-800">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 bg-emerald-50/40 dark:bg-emerald-950/25 whitespace-nowrap">
+                              <span className="font-semibold text-emerald-800 dark:text-emerald-300">
                                 {row.maxStaticLoadActiveKn.toFixed(2)} kN
                               </span>{' '}
-                              <span className="text-[11px] text-slate-500">
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                                 ({row.maxStaticLoadActiveTon.toFixed(2)} T)
                               </span>
                             </td>
                             {/* Editable Applied Static Axial Load F_kerja (kN) */}
-                            <td className="py-1 px-1.5 border-r border-slate-200">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="number"
                                 step="any"
@@ -3446,11 +3496,11 @@ export default function App() {
                                     appliedLoadKn: Number(e.target.value),
                                   })
                                 }
-                                className="w-20 px-1.5 py-0.5 text-right bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600 font-semibold text-slate-900"
+                                className="w-20 px-1.5 py-0.5 text-right bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 font-semibold text-slate-900 dark:text-slate-100"
                               />
                             </td>
                             {/* Green / Red Status Lamp Indicator (Lampu Hijau = Aman, Lampu Merah = Overload) */}
-                            <td className="py-1.5 px-2.5 border-r border-slate-200 whitespace-nowrap font-sans">
+                            <td className="py-1.5 px-2.5 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap font-sans">
                               <div className="flex items-center gap-2">
                                 <span
                                   aria-hidden="true"
@@ -3463,20 +3513,20 @@ export default function App() {
                                 <span
                                   className={`font-semibold text-xs ${
                                     row.isLoadSafe
-                                      ? 'text-emerald-800'
-                                      : 'text-red-700'
+                                      ? 'text-emerald-800 dark:text-emerald-400'
+                                      : 'text-red-700 dark:text-red-400'
                                   }`}
                                 >
                                   {row.isLoadSafe ? 'AMAN' : 'OVERLOAD'}
                                 </span>
-                                <span className="text-slate-400">·</span>
-                                <span className="font-mono text-[11px] text-slate-600">
+                                <span className="text-slate-400 dark:text-slate-600">·</span>
+                                <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400">
                                   {row.loadRatioPct.toFixed(1)}%
                                 </span>
                               </div>
                             </td>
                             {/* Editable Thread Friction Coefficient mu */}
-                            <td className="py-1 px-1.5 border-r border-slate-200 bg-indigo-50/20">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800 bg-indigo-50/20 dark:bg-indigo-950/20">
                               <input
                                 type="number"
                                 step="0.01"
@@ -3488,24 +3538,24 @@ export default function App() {
                                     frictionMu: Number(e.target.value),
                                   })
                                 }
-                                className="w-16 px-1.5 py-0.5 text-right bg-white border border-indigo-200 rounded focus:outline-none focus:border-indigo-600 font-semibold text-indigo-950"
+                                className="w-16 px-1.5 py-0.5 text-right bg-white dark:bg-slate-950 border border-indigo-200 dark:border-indigo-800 rounded focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 font-semibold text-indigo-950 dark:text-indigo-200"
                               />
                             </td>
                             {/* Calculated Tightening Torque T (N*m) at F_kerja & T_max */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 bg-indigo-50/30 whitespace-nowrap">
-                              <div className="font-semibold text-indigo-900">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 bg-indigo-50/30 dark:bg-indigo-950/25 whitespace-nowrap">
+                              <div className="font-semibold text-indigo-900 dark:text-indigo-300">
                                 {row.tighteningTorqueWorkNm.toFixed(2)} N·m
                               </div>
-                              <div className="text-[10px] text-slate-500">
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400">
                                 Maks: {row.tighteningTorqueMaxNm.toFixed(1)} N·m · η={row.threadEfficiencyPct}%
                               </div>
                             </td>
                             {/* D1 Tap Drill */}
-                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 text-amber-800">
+                            <td className="py-1.5 px-2.5 text-right border-r border-slate-200 dark:border-slate-800 text-amber-800 dark:text-amber-400">
                               {row.D1.toFixed(3)}
                             </td>
                             {/* Editable Length */}
-                            <td className="py-1 px-1.5 border-r border-slate-200">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800">
                               <input
                                 type="number"
                                 step={10}
@@ -3515,11 +3565,11 @@ export default function App() {
                                     lengthMm: Number(e.target.value),
                                   })
                                 }
-                                className="w-16 px-1.5 py-0.5 text-right bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                                className="w-16 px-1.5 py-0.5 text-right bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                               />
                             </td>
                             {/* Editable Notes */}
-                            <td className="py-1 px-1.5 border-r border-slate-200 font-sans">
+                            <td className="py-1 px-1.5 border-r border-slate-200 dark:border-slate-800 font-sans">
                               <input
                                 type="text"
                                 value={row.notes ?? ''}
@@ -3528,7 +3578,7 @@ export default function App() {
                                     notes: e.target.value,
                                   })
                                 }
-                                className="w-40 px-1.5 py-0.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                                className="w-40 px-1.5 py-0.5 text-xs bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
                               />
                             </td>
                             {/* Row Actions */}
@@ -3544,7 +3594,7 @@ export default function App() {
                                       row.materialGrade
                                     );
                                   }}
-                                  className="p-1 text-slate-500 hover:text-blue-600 rounded"
+                                  className="p-1 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded"
                                 >
                                   <Copy className="w-3.5 h-3.5" />
                                 </button>
@@ -3555,7 +3605,7 @@ export default function App() {
                                     e.stopPropagation();
                                     handleDeleteProjectRow(row.id);
                                   }}
-                                  className="p-1 text-slate-500 hover:text-red-600 rounded"
+                                  className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -3581,15 +3631,15 @@ export default function App() {
         {activeView === 'cad_calc' && (
           <div className="space-y-6">
             {/* Quick Thread Selector Strip */}
-            <div className="bg-white border border-slate-200 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-xs font-semibold text-slate-800">
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   Pilih Spesifikasi Ulir (Tr 8 – Tr 1120):
                 </label>
                 <select
                   value={selectedRow.id}
                   onChange={(e) => setSelectedRowId(e.target.value)}
-                  className="px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:border-blue-600 max-w-md"
+                  className="px-3 py-1.5 text-xs font-mono bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-md focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 max-w-md"
                 >
                   <optgroup label="Lembar Kerja Proyek Anda">
                     {projectRows.map((r) => (
@@ -3612,7 +3662,7 @@ export default function App() {
                 </select>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 font-mono">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400 font-mono">
                 <span>d3 = {selectedRow.d3} mm</span>
                 <span>·</span>
                 <span>Ac = {selectedRow.coreAreaMm2} mm²</span>
@@ -3722,6 +3772,7 @@ export default function App() {
             {/* Recharts Visualization: Friction Coefficient (mu) vs Tightening Torque (T) & Core d3 Stress */}
             <FrictionTorqueChartPanel
               row={selectedRow}
+              isDark={theme === 'dark'}
               onSelectFrictionMu={(newMu) => {
                 const existsInProject = projectRows.some(
                   (r) => r.id === selectedRow.id
@@ -3746,8 +3797,8 @@ export default function App() {
       </main>
 
       {/* Quiet Editorial Footer */}
-      <footer className="mt-auto border-t border-slate-200 bg-white py-4 px-6">
-        <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-6">
+        <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
           <div>
             Thread Calculation · Standar Geometri Ulir Metrik Trapesium Tr 8 s/d Tr 1120 (ISO 2901–2904, DIN 103 & DIN 2781)
           </div>
@@ -3755,7 +3806,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveView('standard')}
-              className="hover:text-slate-900 transition-colors"
+              className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
             >
               Tabel Standar Tr 8 – Tr 1120
             </button>
@@ -3763,7 +3814,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveView('project')}
-              className="hover:text-slate-900 transition-colors"
+              className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
             >
               Lembar Kerja Proyek
             </button>

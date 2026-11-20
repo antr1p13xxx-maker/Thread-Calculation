@@ -19,12 +19,14 @@ interface ProjectLoadChartProps {
   projectRows: TrCalculatedRow[];
   selectedRowId: string;
   onSelectRow: (id: string, rowNum: number) => void;
+  isDark?: boolean;
 }
 
 export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
   projectRows,
   selectedRowId,
   onSelectRow,
+  isDark = false,
 }) => {
   const [unitMode, setUnitMode] = useState<'kN' | 'Ton'>('kN');
   const [scaleMode, setScaleMode] = useState<'linear' | 'log'>('linear');
@@ -63,30 +65,35 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
   }
 
   const unitLabel = unitMode === 'kN' ? 'kN' : 'Ton';
+  const gridColor = isDark ? '#1E293B' : '#E2E8F0';
+  const axisLineColor = isDark ? '#334155' : '#CBD5E1';
+  const tickTextColor = isDark ? '#94A3B8' : '#334155';
+  const yTickTextColor = isDark ? '#94A3B8' : '#475569';
+  const cursorFill = isDark ? '#1E293B' : '#F1F5F9';
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-4 transition-colors">
       {/* Header & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Grafik Perbandingan Kapasitas Beban Statis Aksial: Baja C45 vs Perunggu ({projectRows.length} Baris Proyek)
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Berdasarkan rumus luas penampang geser inti <code className="font-mono text-slate-700">Ac = (π/4)·d3²</code> · Baja C45 (<code className="font-mono">τ_izin = 65 MPa</code>) vs Perunggu CuSn12 (<code className="font-mono">τ_izin = 30 MPa</code>) · Klik batang grafik untuk memilih baris
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Berdasarkan rumus luas penampang geser inti <code className="font-mono text-slate-700 dark:text-slate-300">Ac = (π/4)·d3²</code> · Baja C45 (<code className="font-mono">τ_izin = 65 MPa</code>) vs Perunggu CuSn12 (<code className="font-mono">τ_izin = 30 MPa</code>) · Klik batang grafik untuk memilih baris
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Unit Toggle: kN vs Ton */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
             <button
               type="button"
               onClick={() => setUnitMode('kN')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                 unitMode === 'kN'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Satuan kN
@@ -96,8 +103,8 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
               onClick={() => setUnitMode('Ton')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                 unitMode === 'Ton'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Satuan Ton (tf)
@@ -105,14 +112,14 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
           </div>
 
           {/* Y-Axis Scale Toggle: Linear vs Logarithmic (helpful when mixing Tr 20 and Tr 1120) */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
             <button
               type="button"
               onClick={() => setScaleMode('linear')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                 scaleMode === 'linear'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Skala Linear
@@ -122,8 +129,8 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
               onClick={() => setScaleMode('log')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                 scaleMode === 'log'
-                  ? 'bg-white text-blue-700 font-semibold shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 font-semibold shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Skala Logaritmik
@@ -153,21 +160,21 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#E2E8F0"
+              stroke={gridColor}
               vertical={false}
             />
             <XAxis
               dataKey="label"
-              tick={{ fill: '#334155', fontSize: 11 }}
-              axisLine={{ stroke: '#CBD5E1' }}
-              tickLine={{ stroke: '#CBD5E1' }}
+              tick={{ fill: tickTextColor, fontSize: 11 }}
+              axisLine={{ stroke: axisLineColor }}
+              tickLine={{ stroke: axisLineColor }}
             />
             <YAxis
               scale={scaleMode}
               domain={scaleMode === 'log' ? ['auto', 'auto'] : [0, 'auto']}
-              tick={{ fill: '#475569', fontSize: 11 }}
-              axisLine={{ stroke: '#CBD5E1' }}
-              tickLine={{ stroke: '#CBD5E1' }}
+              tick={{ fill: yTickTextColor, fontSize: 11 }}
+              axisLine={{ stroke: axisLineColor }}
+              tickLine={{ stroke: axisLineColor }}
               tickFormatter={(val: number) =>
                 val >= 1000
                   ? `${(val / 1000).toFixed(1)}k`
@@ -178,14 +185,14 @@ export const ProjectLoadChart: React.FC<ProjectLoadChartProps> = ({
                 angle: -90,
                 position: 'insideLeft',
                 style: {
-                  fill: '#475569',
+                  fill: yTickTextColor,
                   fontSize: 11,
                   fontFamily: 'Plus Jakarta Sans, sans-serif',
                 },
               }}
             />
             <Tooltip
-              cursor={{ fill: '#F1F5F9' }}
+              cursor={{ fill: cursorFill }}
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) return null;
                 const item = payload[0].payload;

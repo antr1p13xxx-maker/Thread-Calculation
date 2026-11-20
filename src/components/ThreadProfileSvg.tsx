@@ -51,28 +51,28 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-colors">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50/70">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Penampang Geometri Profil Ulir {row.designation} ({famInfo.shortName} — {angleLabel})
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {famInfo.standardRef} · Pitch P = {row.p} mm
             {row.tpi ? ` (${row.tpi} TPI)` : ''} · Kelonggaran Puncak ac = {row.ac} mm
           </p>
         </div>
 
         {/* Interactive segmented control for blueprint mode */}
-        <div className="flex items-center gap-1 p-1 bg-slate-200/70 rounded-md">
+        <div className="flex items-center gap-1 p-1 bg-slate-200/70 dark:bg-slate-800 rounded-md">
           <button
             type="button"
             onClick={() => setViewMode('assembled')}
             className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
               viewMode === 'assembled'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Rakitan Baut & Mur
@@ -82,8 +82,8 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
             onClick={() => setViewMode('external')}
             className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
               viewMode === 'external'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Ulir Luar (Baut)
@@ -93,8 +93,8 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
             onClick={() => setViewMode('internal')}
             className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
               viewMode === 'internal'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Ulir Dalam (Mur)
@@ -104,8 +104,8 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
             onClick={() => setViewMode('3wire')}
             className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
               viewMode === '3wire'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             Uji 3-Kawat (dw)
@@ -114,7 +114,7 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
       </div>
 
       {/* Blueprint SVG Canvas */}
-      <div className="p-4 bg-[#0F172A] text-slate-100 relative">
+      <div className="p-4 bg-[#0F172A] dark:bg-slate-950 text-slate-100 relative">
         <svg
           viewBox="0 0 820 340"
           className="w-full h-auto max-h-[340px] select-none font-mono"
@@ -516,52 +516,52 @@ export const ThreadProfileSvg: React.FC<ThreadProfileSvgProps> = ({ row }) => {
       </div>
 
       {/* Quick Geometry Formula Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-white text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 text-xs">
         <div className="p-2.5">
-          <div className="text-slate-500">Dia. Luar (d)</div>
-          <div className="font-mono font-semibold text-slate-900 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Dia. Luar (d)</div>
+          <div className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
             {row.d.toFixed(2)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Dia. Pitch (d2)</div>
-          <div className="font-mono font-semibold text-emerald-700 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Dia. Pitch (d2)</div>
+          <div className="font-mono font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
             {row.d2.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Inti Baut (d3)</div>
-          <div className="font-mono font-semibold text-blue-700 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Inti Baut (d3)</div>
+          <div className="font-mono font-semibold text-blue-700 dark:text-blue-400 mt-0.5">
             {row.d3.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Bor Mur (D1)</div>
-          <div className="font-mono font-semibold text-amber-700 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Bor Mur (D1)</div>
+          <div className="font-mono font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
             {row.D1.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Tinggi Ulir (h3)</div>
-          <div className="font-mono font-semibold text-slate-900 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Tinggi Ulir (h3)</div>
+          <div className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
             {row.h3.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Ujung Pahat (w)</div>
-          <div className="font-mono font-semibold text-slate-900 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Ujung Pahat (w)</div>
+          <div className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
             {row.w.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Kawat Uji (dw)</div>
-          <div className="font-mono font-semibold text-slate-900 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Kawat Uji (dw)</div>
+          <div className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
             {row.bestWireSize.toFixed(3)} mm
           </div>
         </div>
         <div className="p-2.5">
-          <div className="text-slate-500">Ukuran 3-Kawat (M)</div>
-          <div className="font-mono font-semibold text-slate-900 mt-0.5">
+          <div className="text-slate-500 dark:text-slate-400">Ukuran 3-Kawat (M)</div>
+          <div className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
             {row.measureOverWires.toFixed(3)} mm
           </div>
         </div>

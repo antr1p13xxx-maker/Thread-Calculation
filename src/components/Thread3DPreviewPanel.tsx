@@ -630,16 +630,16 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-colors">
       {/* Top Control Header */}
-      <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Box className="w-4 h-4 text-blue-600" />
-            <h3 className="text-sm font-semibold text-slate-900">
+            <Box className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               Pratinjau 3D Interaktif (Three.js WebGL) — {row.designation}
             </h3>
-            <span className="px-2 py-0.5 text-[11px] font-mono font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded">
+            <span className="px-2 py-0.5 text-[11px] font-mono font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/70 rounded">
               {row.threadType === 'BUTTRESS_S'
                 ? 'S 3°/30°'
                 : row.threadType === 'SQ'
@@ -648,7 +648,7 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
               · {row.starts} Start
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Klik &amp; seret untuk memutar 360°, gunakan scroll/cubit untuk zoom in/out, dan klik kanan untuk menggeser geometri ulir trapesium secara real-time.
           </p>
         </div>
@@ -656,14 +656,14 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
         {/* Interactive 3D Mode & Camera Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Assembly Mode Segmented Control */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md text-xs">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md text-xs">
             <button
               type="button"
               onClick={() => setAssemblyMode('screw_and_nut')}
               className={`px-2.5 py-1 font-medium rounded transition-colors ${
                 assemblyMode === 'screw_and_nut'
-                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Baut + Mur Cutaway
@@ -673,8 +673,8 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
               onClick={() => setAssemblyMode('screw_only')}
               className={`px-2.5 py-1 font-medium rounded transition-colors ${
                 assemblyMode === 'screw_only'
-                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Poros Ulir Luar
@@ -684,8 +684,8 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
               onClick={() => setAssemblyMode('nut_cutaway')}
               className={`px-2.5 py-1 font-medium rounded transition-colors ${
                 assemblyMode === 'nut_cutaway'
-                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               Mur Dalam (Cutaway)
@@ -698,8 +698,8 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
             onClick={() => setShowPitchCylinder((v) => !v)}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               showPitchCylinder
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -712,8 +712,8 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
             onClick={() => setWireframeMode((w) => !w)}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               wireframeMode
-                ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -726,8 +726,8 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
             onClick={() => setAutoRotate((r) => !r)}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               autoRotate
-                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             {autoRotate ? (

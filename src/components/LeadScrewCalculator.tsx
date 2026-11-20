@@ -70,12 +70,12 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Left: Lead Screw Mechanics & Load Calculator */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-        <div className="border-b border-slate-200 pb-3">
-          <h3 className="text-sm font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4 transition-colors">
+        <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             01. Kalkulator Mekanika Spindel & Torsi ({row.designation})
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Analisis torsi pengangkatan, efisiensi mekanis, tekanan bidang kontak mur, dan status self-locking.
           </p>
         </div>
@@ -83,7 +83,7 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
         {/* Inputs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Beban Aksial F (N)
             </label>
             <input
@@ -92,17 +92,17 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
               step={500}
               value={axialLoadN}
               onChange={(e) => setAxialLoadN(Math.max(0, Number(e.target.value)))}
-              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:border-blue-600"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Koef. Gesek (μ)
             </label>
             <select
               value={frictionMu}
               onChange={(e) => setFrictionMu(Number(e.target.value))}
-              className="w-full px-2 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+              className="w-full px-2 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:border-blue-600"
             >
               <option value={0.08}>0.08 (Perunggu + Oli)</option>
               <option value={0.10}>0.10 (Perunggu + Gemuk)</option>
@@ -112,7 +112,7 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Panjang Mur (mm)
             </label>
             <input
@@ -123,11 +123,11 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
               onChange={(e) =>
                 setNutLengthMm(Math.max(row.p, Number(e.target.value)))
               }
-              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:border-blue-600"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Putaran (RPM)
             </label>
             <input
@@ -138,42 +138,44 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
               onChange={(e) =>
                 setSpindleRpm(Math.max(1, Number(e.target.value)))
               }
-              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-md focus:outline-none focus:border-blue-600"
+              className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:border-blue-600"
             />
           </div>
         </div>
 
         {/* Calculated Results Table */}
-        <div className="border border-slate-200 rounded-md divide-y divide-slate-200 text-xs">
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70">
-            <span className="text-slate-600">
+        <div className="border border-slate-200 dark:border-slate-800 rounded-md divide-y divide-slate-200 dark:divide-slate-800 text-xs">
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70 dark:bg-slate-800/40">
+            <span className="text-slate-600 dark:text-slate-400">
               Torsi Angkat / Dorong (T<sub>R</sub>)
             </span>
-            <span className="font-mono font-semibold text-slate-900">
+            <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
               {torqueRaiseNm.toFixed(2)} N·m
             </span>
           </div>
           <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-slate-600">
+            <span className="text-slate-600 dark:text-slate-400">
               Torsi Turun / Balik (T<sub>L</sub>)
             </span>
-            <span className="font-mono font-semibold text-slate-900">
+            <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
               {torqueLowerNm.toFixed(2)} N·m
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70">
-            <span className="text-slate-600">Efisiensi Mekanis Ulir (η)</span>
-            <span className="font-mono font-semibold text-blue-700">
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70 dark:bg-slate-800/40">
+            <span className="text-slate-600 dark:text-slate-400">Efisiensi Mekanis Ulir (η)</span>
+            <span className="font-mono font-semibold text-blue-700 dark:text-blue-400">
               {efficiencyPct.toFixed(1)} %
             </span>
           </div>
           <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-slate-600">
+            <span className="text-slate-600 dark:text-slate-400">
               Status Penguncian Otomatis (Self-Locking)
             </span>
             <span
               className={`font-mono font-semibold ${
-                isSelfLockingNow ? 'text-emerald-700' : 'text-amber-700'
+                isSelfLockingNow
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-amber-700 dark:text-amber-400'
               }`}
             >
               {isSelfLockingNow
@@ -181,35 +183,39 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
                 : `Tidak Mengunci (λ = ${row.leadAngleDeg}° ≥ ρ' = ${rhoPrimeDeg.toFixed(2)}°)`}
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70">
-            <span className="text-slate-600">
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70 dark:bg-slate-800/40">
+            <span className="text-slate-600 dark:text-slate-400">
               Tegangan Aksial Inti Baut (σ = F / A<sub>s</sub>)
             </span>
             <span
               className={`font-mono font-semibold ${
-                axialStressMpa > 120 ? 'text-red-600' : 'text-slate-900'
+                axialStressMpa > 120
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-slate-900 dark:text-slate-100'
               }`}
             >
               {axialStressMpa.toFixed(1)} MPa ({row.stressAreaMm2} mm²)
             </span>
           </div>
           <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-slate-600">
+            <span className="text-slate-600 dark:text-slate-400">
               Tekanan Kontak Gigi Mur (p<sub>B</sub> pada {engagedThreads.toFixed(1)} lilitan)
             </span>
             <span
               className={`font-mono font-semibold ${
-                bearingPressureMpa > 15 ? 'text-amber-700' : 'text-emerald-700'
+                bearingPressureMpa > 15
+                  ? 'text-amber-700 dark:text-amber-400'
+                  : 'text-emerald-700 dark:text-emerald-400'
               }`}
             >
               {bearingPressureMpa.toFixed(2)} MPa
             </span>
           </div>
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70">
-            <span className="text-slate-600">
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-50/70 dark:bg-slate-800/40">
+            <span className="text-slate-600 dark:text-slate-400">
               Kecepatan Linear & Daya Motor ({spindleRpm} RPM)
             </span>
-            <span className="font-mono font-semibold text-slate-900">
+            <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
               {linearSpeedMmSec.toFixed(1)} mm/dtk · {powerKw.toFixed(2)} kW
             </span>
           </div>
@@ -217,26 +223,26 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
       </div>
 
       {/* Right: CNC Lathe G-Code & Tooling Sheet */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 flex flex-col justify-between space-y-4 transition-colors">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 02. Generator Program Bubut CNC (Fanuc G76) & Geometri Pahat
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Parameter penyayatan ulir trapesium 30° otomatis untuk mesin bubut CNC.
               </p>
             </div>
 
-            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
               <button
                 type="button"
                 onClick={() => setIsInternalGCode(false)}
                 className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                   !isInternalGCode
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 Ulir Luar (Baut)
@@ -246,8 +252,8 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
                 onClick={() => setIsInternalGCode(true)}
                 className={`px-2.5 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                   isInternalGCode
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 Ulir Dalam (Mur)
@@ -256,22 +262,22 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
           </div>
 
           {/* Tooling summary strip */}
-          <div className="grid grid-cols-3 gap-2 text-xs bg-slate-50 p-3 rounded-md border border-slate-200">
+          <div className="grid grid-cols-3 gap-2 text-xs bg-slate-50 dark:bg-slate-800/60 p-3 rounded-md border border-slate-200 dark:border-slate-700/80">
             <div>
-              <span className="text-slate-500 block">Sudut Pahat / Infeed</span>
-              <span className="font-mono font-semibold text-slate-900">
+              <span className="text-slate-500 dark:text-slate-400 block">Sudut Pahat / Infeed</span>
+              <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                 30° (Infeed 29°)
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">Lebar Ujung Pahat (w)</span>
-              <span className="font-mono font-semibold text-blue-700">
+              <span className="text-slate-500 dark:text-slate-400 block">Lebar Ujung Pahat (w)</span>
+              <span className="font-mono font-semibold text-blue-700 dark:text-blue-400">
                 {row.w.toFixed(3)} mm
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">Dalam Pemakanan (h3)</span>
-              <span className="font-mono font-semibold text-slate-900">
+              <span className="text-slate-500 dark:text-slate-400 block">Dalam Pemakanan (h3)</span>
+              <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                 {row.h3.toFixed(3)} mm (~{row.recommendedPasses}x pass)
               </span>
             </div>
@@ -279,7 +285,7 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
 
           {/* G-Code Output Block */}
           <div className="relative">
-            <pre className="p-3.5 bg-[#0F172A] text-slate-100 rounded-md text-xs font-mono overflow-x-auto leading-relaxed">
+            <pre className="p-3.5 bg-[#0F172A] dark:bg-slate-950 border border-transparent dark:border-slate-800 text-slate-100 rounded-md text-xs font-mono overflow-x-auto leading-relaxed">
               {gcodeText}
             </pre>
             <button
@@ -302,13 +308,13 @@ export const LeadScrewCalculator: React.FC<LeadScrewCalculatorProps> = ({
           </div>
         </div>
 
-        <div className="text-xs text-slate-500 pt-2 border-t border-slate-100">
+        <div className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
           Catatan Bengkel: Untuk ulir luar {row.designation}, periksa ukuran di atas 3 kawat ukur{' '}
-          <strong className="font-mono text-slate-800">
+          <strong className="font-mono text-slate-800 dark:text-slate-200">
             dw = {row.bestWireSize.toFixed(3)} mm
           </strong>{' '}
           hingga mikrometer menunjukkan{' '}
-          <strong className="font-mono text-slate-800">
+          <strong className="font-mono text-slate-800 dark:text-slate-200">
             M = {row.measureOverWires.toFixed(3)} mm
           </strong>.
         </div>
