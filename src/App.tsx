@@ -1098,7 +1098,7 @@ export default function App() {
                 : 'border-transparent hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
-            Tabel Standar Tr 8 – Tr 1120
+            Tabel Ulir
           </button>
           <button
             type="button"
@@ -1177,7 +1177,7 @@ export default function App() {
               : 'text-slate-600 dark:text-slate-400'
           }`}
         >
-          Tr 8 – Tr 1120
+          Tabel Ulir
         </button>
         <button
           type="button"
@@ -3808,7 +3808,7 @@ export default function App() {
               onClick={() => setActiveView('standard')}
               className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
             >
-              Tabel Standar Tr 8 – Tr 1120
+              Tabel Ulir
             </button>
             <span aria-hidden="true">·</span>
             <button
