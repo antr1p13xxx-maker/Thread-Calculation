@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Search,
   Download,
@@ -468,7 +468,15 @@ export default function App() {
       (records) => {
         if (active) setWireInspections(records);
       },
-      30
+      30,
+      (errInfo) => {
+        console.error('Firestore wire inspections subscription error:', errInfo);
+        if (active) {
+          triggerToast(
+            `Gagal menyinkronkan log inspeksi 3-kawat: ${errInfo.error}`
+          );
+        }
+      }
     );
 
     return () => {
@@ -476,6 +484,17 @@ export default function App() {
       unsubInspections();
     };
   }, [isFirebaseAuthReady, firebaseUser?.uid]);
+
+  const inlineWireLogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  useEffect(() => {
+    return () => {
+      if (inlineWireLogTimerRef.current) {
+        clearTimeout(inlineWireLogTimerRef.current);
+      }
+    };
+  }, []);
 
   // Automatically persist changes to Firestore (when signed in) and local cache
   useEffect(() => {
@@ -530,6 +549,9 @@ export default function App() {
     try {
       await signOutFirebase();
       triggerToast('Sesi Firebase keluar. Data lokal tetap tersimpan.');
+    } catch (err) {
+      console.error('Firebase Sign-Out error:', err);
+      triggerToast('Gagal keluar dari sesi Firebase.');
     } finally {
       setIsFirebaseAuthBusy(false);
     }
@@ -558,6 +580,11 @@ export default function App() {
           `Disimpan secara lokal (${projectRows.length} baris). Masuk Google untuk menyimpan ke Firebase Console.`
         );
       }
+    } catch (err) {
+      console.error('Manual save project error:', err);
+      triggerToast(
+        'Gagal menyimpan ke Cloud Firestore. Data tersimpan di cache lokal.'
+      );
     } finally {
       setIsDatabaseSyncing(false);
     }
@@ -584,23 +611,39 @@ export default function App() {
       } else {
         await handleManualSaveProject();
       }
+    } catch (err) {
+      console.error('Pull project from Firestore error:', err);
+      triggerToast('Gagal memuat data proyek dari Cloud Firestore.');
     } finally {
       setIsDatabaseSyncing(false);
     }
   };
 
   const handleResetProjectToDefault = async () => {
-    const resetData = await resetPersistedWorkspace();
-    setReportProjectName(resetData.projectName);
-    setReportPreparedBy(resetData.preparedBy);
-    setProjectRows(resetData.projectRows);
-    setCustomMeasuredWireM(resetData.customMeasuredWireM);
-    setWireCheckPreset('mixed_qc');
-    if (firebaseUser) {
-      const ts = await saveWorkspaceToFirestore(firebaseUser.uid, resetData);
-      setLastSyncedAt(ts);
+    try {
+      const resetData = await resetPersistedWorkspace();
+      setReportProjectName(resetData.projectName);
+      setReportPreparedBy(resetData.preparedBy);
+      setProjectRows(resetData.projectRows);
+      setCustomMeasuredWireM(resetData.customMeasuredWireM);
+      setWireCheckPreset('mixed_qc');
+      if (firebaseUser) {
+        try {
+          const ts = await saveWorkspaceToFirestore(firebaseUser.uid, resetData);
+          setLastSyncedAt(ts);
+        } catch (err) {
+          console.error('Firestore reset sync error:', err);
+          triggerToast(
+            'Templat lokal direset, namun sinkronisasi ke Cloud Firestore gagal.'
+          );
+          return;
+        }
+      }
+      triggerToast('Lembar Kerja Proyek dikembalikan ke templat standar awal.');
+    } catch (err) {
+      console.error('Reset workspace error:', err);
+      triggerToast('Gagal mereset Lembar Kerja Proyek.');
     }
-    triggerToast('Lembar Kerja Proyek dikembalikan ke templat standar awal.');
   };
 
   const handleExportPdfReport = () => {
@@ -1098,7 +1141,7 @@ export default function App() {
                 : 'border-transparent hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
-            Tabel Ulir
+            Tabel Standar Tr 8 – Tr 1120
           </button>
           <button
             type="button"
@@ -1177,7 +1220,7 @@ export default function App() {
               : 'text-slate-600 dark:text-slate-400'
           }`}
         >
-          Tabel Ulir
+          Tr 8 – Tr 1120
         </button>
         <button
           type="button"
@@ -1310,30 +1353,39 @@ export default function App() {
                 inferredD2Mm: inferredD2,
                 qcStatus,
               } as const;
-              const newInspection = firebaseUser
-                ? await logWireInspectionToFirestore(
-                    firebaseUser.uid,
-                    entry,
-                    {
-                      projectName: reportProjectName,
-                      preparedBy: reportPreparedBy,
-                      projectRows,
-                      customMeasuredWireM,
-                      wireCheckPreset,
-                    }
-                  )
-                : await logWireInspectionReading(entry);
-              if (!firebaseUser) {
-                setWireInspections((prev) => [newInspection, ...prev]);
+              try {
+                const newInspection = firebaseUser
+                  ? await logWireInspectionToFirestore(
+                      firebaseUser.uid,
+                      entry,
+                      {
+                        projectName: reportProjectName,
+                        preparedBy: reportPreparedBy,
+                        projectRows,
+                        customMeasuredWireM,
+                        wireCheckPreset,
+                      }
+                    )
+                  : await logWireInspectionReading(entry);
+                if (!firebaseUser) {
+                  setWireInspections((prev) => [newInspection, ...prev]);
+                }
+                setLastSyncedAt(new Date().toISOString());
+                triggerToast(
+                  `Inspeksi 3-Kawat ${selectedRow.designation} (M=${effectiveM.toFixed(
+                    3
+                  )} mm · ${qcStatus}) tersinkron ke ${
+                    firebaseUser ? 'Cloud Firestore' : 'penyimpanan lokal'
+                  }.`
+                );
+              } catch (err) {
+                console.error('Log active wire inspection error:', err);
+                triggerToast(
+                  `Gagal mencatat inspeksi 3-kawat ke ${
+                    firebaseUser ? 'Cloud Firestore' : 'server lokal'
+                  }.`
+                );
               }
-              setLastSyncedAt(new Date().toISOString());
-              triggerToast(
-                `Inspeksi 3-Kawat ${selectedRow.designation} (M=${effectiveM.toFixed(
-                  3
-                )} mm · ${qcStatus}) tersinkron ke ${
-                  firebaseUser ? 'Cloud Firestore' : 'penyimpanan lokal'
-                }.`
-              );
             }}
             onAddActiveRowToProject={() => {
               handleAddRowToProject(selectedRow, 'C45');
@@ -2590,35 +2642,64 @@ export default function App() {
                                                 inferredD2Mm: inferredD2,
                                                 qcStatus,
                                               } as const;
-                                              if (firebaseUser) {
-                                                void logWireInspectionToFirestore(
-                                                  firebaseUser.uid,
-                                                  entry,
-                                                  {
-                                                    projectName: reportProjectName,
-                                                    preparedBy: reportPreparedBy,
-                                                    projectRows,
-                                                    customMeasuredWireM,
-                                                    wireCheckPreset,
-                                                  }
-                                                ).then(() => {
-                                                  setLastSyncedAt(
-                                                    new Date().toISOString()
-                                                  );
-                                                });
-                                              } else {
-                                                void logWireInspectionReading(
-                                                  entry
-                                                ).then((rec) => {
-                                                  setWireInspections((prev) => [
-                                                    rec,
-                                                    ...prev,
-                                                  ]);
-                                                  setLastSyncedAt(
-                                                    new Date().toISOString()
-                                                  );
-                                                });
+                                              if (inlineWireLogTimerRef.current) {
+                                                clearTimeout(
+                                                  inlineWireLogTimerRef.current
+                                                );
                                               }
+                                              inlineWireLogTimerRef.current =
+                                                setTimeout(() => {
+                                                  if (firebaseUser) {
+                                                    void logWireInspectionToFirestore(
+                                                      firebaseUser.uid,
+                                                      entry,
+                                                      {
+                                                        projectName:
+                                                          reportProjectName,
+                                                        preparedBy:
+                                                          reportPreparedBy,
+                                                        projectRows,
+                                                        customMeasuredWireM: {
+                                                          ...customMeasuredWireM,
+                                                          [row.id]: val,
+                                                        },
+                                                        wireCheckPreset,
+                                                      }
+                                                    )
+                                                      .then(() => {
+                                                        setLastSyncedAt(
+                                                          new Date().toISOString()
+                                                        );
+                                                      })
+                                                      .catch((err) => {
+                                                        console.error(
+                                                          'Inline wire Firestore log error:',
+                                                          err
+                                                        );
+                                                      });
+                                                  } else {
+                                                    void logWireInspectionReading(
+                                                      entry
+                                                    )
+                                                      .then((rec) => {
+                                                        setWireInspections(
+                                                          (prev) => [
+                                                            rec,
+                                                            ...prev,
+                                                          ]
+                                                        );
+                                                        setLastSyncedAt(
+                                                          new Date().toISOString()
+                                                        );
+                                                      })
+                                                      .catch((err) => {
+                                                        console.error(
+                                                          'Inline wire local log error:',
+                                                          err
+                                                        );
+                                                      });
+                                                  }
+                                                }, 500);
                                             }
                                           }}
                                           title="Ketik nilai pengukuran 3-kawat aktual (mm) untuk menguji batas Go/No-Go 7e/7H"
@@ -3345,7 +3426,7 @@ export default function App() {
                     {projectRows.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={16}
+                          colSpan={20}
                           className="py-10 text-center font-sans text-slate-500 dark:text-slate-400"
                         >
                           Lembar Kerja Proyek masih kosong. Tambahkan ulir dari form di atas atau salin dari Tabel Standar ISO.
@@ -3808,7 +3889,7 @@ export default function App() {
               onClick={() => setActiveView('standard')}
               className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
             >
-              Tabel Ulir
+              Tabel Standar Tr 8 – Tr 1120
             </button>
             <span aria-hidden="true">·</span>
             <button

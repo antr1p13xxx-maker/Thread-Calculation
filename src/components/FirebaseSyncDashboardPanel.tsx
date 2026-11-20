@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TrCalculatedRow,
   THREAD_MATERIAL_SPECS,
@@ -69,6 +69,10 @@ export const FirebaseSyncDashboardPanel: React.FC<
     activeMeasuredWireM.toFixed(3)
   );
   const [copiedConfig, setCopiedConfig] = useState<boolean>(false);
+
+  useEffect(() => {
+    setQuickWireInputM(activeMeasuredWireM.toFixed(3));
+  }, [selectedRow.id, activeMeasuredWireM]);
 
   const configJsonText = JSON.stringify(FIREBASE_CONFIG_SUMMARY, null, 2);
 

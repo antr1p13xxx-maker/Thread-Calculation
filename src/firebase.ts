@@ -22,12 +22,13 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export const FIREBASE_CONFIG_SUMMARY = {
-  apiKey: "AIzaSyD1yBgfuBgdJZkWtSGg4mKAud1oQGQonnI",
-  authDomain: "thread-calculation.firebaseapp.com",
-  projectId: "thread-calculation",
-  storageBucket: "thread-calculation.firebasestorage.app",
-  messagingSenderId: "509302109292",
-  appId: "1:509302109292:web:769617838ec569f3b91449"
+  apiKey: firebaseConfig.apiKey,
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+  firestoreDatabaseId: firebaseConfig.firestoreDatabaseId,
+  storageBucket: firebaseConfig.storageBucket,
+  messagingSenderId: firebaseConfig.messagingSenderId,
+  appId: firebaseConfig.appId,
 };
 
 export enum OperationType {
@@ -56,12 +57,12 @@ export interface FirestoreErrorInfo {
   };
 }
 
-export function handleFirestoreError(
+export function buildFirestoreErrorInfo(
   error: unknown,
   operationType: OperationType,
   path: string | null
-): never {
-  const errInfo: FirestoreErrorInfo = {
+): FirestoreErrorInfo {
+  return {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
       userId: auth.currentUser?.uid,
@@ -78,7 +79,24 @@ export function handleFirestoreError(
     operationType,
     path,
   };
+}
+
+export function logFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+): FirestoreErrorInfo {
+  const errInfo = buildFirestoreErrorInfo(error, operationType, path);
   console.error('Firestore Error: ', JSON.stringify(errInfo));
+  return errInfo;
+}
+
+export function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+): never {
+  const errInfo = logFirestoreError(error, operationType, path);
   throw new Error(JSON.stringify(errInfo));
 }
 

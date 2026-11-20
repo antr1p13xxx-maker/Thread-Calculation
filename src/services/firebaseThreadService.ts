@@ -14,7 +14,13 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import {
+  db,
+  handleFirestoreError,
+  logFirestoreError,
+  OperationType,
+  type FirestoreErrorInfo,
+} from '../firebase';
 import {
   TrCalculatedRow,
   calculateTrThread,
@@ -155,13 +161,18 @@ function mapRowToFirestoreFields(row: TrCalculatedRow) {
     materialGrade,
     appliedLoadKn: Math.max(0, Number(row.appliedLoadKn) || 0),
     safetyFactor:
-      row.appliedLoadKn > 0
+      Number.isFinite(row.appliedLoadKn) &&
+      row.appliedLoadKn > 0 &&
+      Number.isFinite(row.maxStaticLoadActiveKn)
         ? Number((row.maxStaticLoadActiveKn / row.appliedLoadKn).toFixed(2))
         : 0,
     isLoadSafe: Boolean(row.isLoadSafe),
     frictionMu: Math.max(0, Number(row.frictionMu) || 0.15),
     tighteningTorqueWorkNm: Number(row.tighteningTorqueWorkNm) || 0,
-    lengthMm: Math.max(0, Number(row.lengthMm ?? 500)),
+    lengthMm: Math.max(
+      0,
+      Number.isFinite(Number(row.lengthMm)) ? Number(row.lengthMm) : 500
+    ),
     notes: String(row.notes ?? '').slice(0, 500),
   };
 
@@ -372,7 +383,9 @@ export async function logWireInspectionToFirestore(
     uid,
     workspaceSeedPayload
   );
-  const inspectionId = sanitizeFirestoreId(`qc-${Date.now()}`);
+  const inspectionId = sanitizeFirestoreId(
+    `qc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+  );
   const docPath = `workspaces/${workspaceId}/wireInspections/${inspectionId}`;
   const docRef = doc(
     db,
@@ -475,7 +488,8 @@ export async function fetchWireInspectionsFromFirestore(
 export function subscribeToWireInspections(
   uid: string,
   onUpdate: (records: WireInspectionRecord[]) => void,
-  maxItems = 30
+  maxItems = 30,
+  onError?: (errInfo: FirestoreErrorInfo) => void
 ): () => void {
   const workspaceId = sanitizeFirestoreId(uid);
   const path = `workspaces/${workspaceId}/wireInspections`;
@@ -517,7 +531,8 @@ export function subscribeToWireInspections(
       onUpdate(items);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.GET, path);
+      const errInfo = logFirestoreError(error, OperationType.GET, path);
+      onError?.(errInfo);
     }
   );
 }

@@ -36,12 +36,17 @@ export interface WireInspectionRecord extends WireInspectionLogPayload {
   inspectedAt: string;
 }
 
-// Supabase Project Configuration (Thread Calculation — zfxzrhqiiojhojvlxqsj)
-const SUPABASE_REST_URL = 'https://zfxzrhqiiojhojvlxqsj.supabase.co/rest/v1';
-const SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_KBrCoCSfUnYOFb0A53cr3A_OW6N7W94';
-const SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeHpyaHFpaW9qaG9qdmx4cXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzgxNjgsImV4cCI6MjEwNjMxNDE2OH0.NvvHMejF2vq3b8wM2swVLD22h_f6an91gYQYAT7A2Ek';
+// Optional Supabase Project Configuration (only active when env vars are set)
+const SUPABASE_REST_URL = String(import.meta.env.VITE_SUPABASE_URL || '')
+  .trim()
+  .replace(/\/+$/, '');
+const SUPABASE_ANON_KEY = String(
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+).trim();
+const SUPABASE_PUBLISHABLE_KEY = String(
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+).trim();
+const IS_SUPABASE_CONFIGURED = Boolean(SUPABASE_REST_URL && SUPABASE_ANON_KEY);
 
 function getSupabaseHeaders(preferUpsert = false): Record<string, string> {
   const headers: Record<string, string> = {
@@ -256,6 +261,7 @@ function writeLocalCache(payload: WorkspacePersistencePayload): void {
 }
 
 async function fetchDirectlyFromSupabase(): Promise<WorkspacePersistencePayload | null> {
+  if (!IS_SUPABASE_CONFIGURED) return null;
   try {
     const [wsRes, rowsRes] = await Promise.all([
       fetch(`${SUPABASE_REST_URL}/thread_workspaces?id=eq.default&select=*`, {
@@ -326,6 +332,7 @@ async function fetchDirectlyFromSupabase(): Promise<WorkspacePersistencePayload 
 async function pushDirectlyToSupabase(
   payload: WorkspacePersistencePayload
 ): Promise<boolean> {
+  if (!IS_SUPABASE_CONFIGURED) return false;
   try {
     const nowIso = payload.updatedAt || new Date().toISOString();
 
@@ -432,24 +439,26 @@ function mapRawWireInspection(item: Record<string, any>): WireInspectionRecord {
 export async function fetchWireInspectionsFromSupabase(
   limit = 30
 ): Promise<WireInspectionRecord[]> {
-  try {
-    const res = await fetch(
-      `${SUPABASE_REST_URL}/thread_wire_inspections?workspace_id=eq.default&select=*&order=inspected_at.desc&limit=${limit}`,
-      {
-        method: 'GET',
-        headers: getSupabaseHeaders(false),
+  if (IS_SUPABASE_CONFIGURED) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_REST_URL}/thread_wire_inspections?workspace_id=eq.default&select=*&order=inspected_at.desc&limit=${limit}`,
+        {
+          method: 'GET',
+          headers: getSupabaseHeaders(false),
+        }
+      );
+      if (res.ok) {
+        const raw = await res.json();
+        if (Array.isArray(raw) && raw.length > 0) {
+          const mapped = raw.map(mapRawWireInspection);
+          writeLocalWireInspections(mapped);
+          return mapped;
+        }
       }
-    );
-    if (res.ok) {
-      const raw = await res.json();
-      if (Array.isArray(raw) && raw.length > 0) {
-        const mapped = raw.map(mapRawWireInspection);
-        writeLocalWireInspections(mapped);
-        return mapped;
-      }
+    } catch {
+      // Fallback to backend proxy
     }
-  } catch {
-    // Fallback to backend proxy
   }
 
   try {
@@ -592,29 +601,36 @@ export async function logWireInspectionReading(
   const existing = readLocalWireInspections();
   writeLocalWireInspections([newRecord, ...existing]);
 
-  await Promise.allSettled([
-    fetch(`${SUPABASE_REST_URL}/thread_wire_inspections`, {
-      method: 'POST',
-      headers: getSupabaseHeaders(false),
-      body: JSON.stringify({
-        workspace_id: 'default',
-        row_id: entry.rowId,
-        designation: entry.designation,
-        best_wire_size_mm: entry.bestWireSizeMm,
-        measured_wire_m_mm: entry.measuredWireMMm,
-        wire_m_min_7e_mm: entry.wireMMin7eMm,
-        wire_m_max_7e_mm: entry.wireMMax7eMm,
-        inferred_d2_mm: entry.inferredD2Mm,
-        qc_status: entry.qcStatus,
-        inspected_at: inspectedAt,
-      }),
-    }),
+  const tasks: Promise<unknown>[] = [
     fetch('/api/wire-inspections', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...entry, inspectedAt }),
     }),
-  ]);
+  ];
+
+  if (IS_SUPABASE_CONFIGURED) {
+    tasks.unshift(
+      fetch(`${SUPABASE_REST_URL}/thread_wire_inspections`, {
+        method: 'POST',
+        headers: getSupabaseHeaders(false),
+        body: JSON.stringify({
+          workspace_id: 'default',
+          row_id: entry.rowId,
+          designation: entry.designation,
+          best_wire_size_mm: entry.bestWireSizeMm,
+          measured_wire_m_mm: entry.measuredWireMMm,
+          wire_m_min_7e_mm: entry.wireMMin7eMm,
+          wire_m_max_7e_mm: entry.wireMMax7eMm,
+          inferred_d2_mm: entry.inferredD2Mm,
+          qc_status: entry.qcStatus,
+          inspected_at: inspectedAt,
+        }),
+      })
+    );
+  }
+
+  await Promise.allSettled(tasks);
 
   return newRecord;
 }

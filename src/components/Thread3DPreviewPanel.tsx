@@ -347,6 +347,7 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
   const [showPitchCylinder, setShowPitchCylinder] = useState<boolean>(true);
   const [wireframeMode, setWireframeMode] = useState<boolean>(false);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const [webglError, setWebglError] = useState<string | null>(null);
 
   const autoRotateRef = useRef<boolean>(autoRotate);
   useEffect(() => {
@@ -369,13 +370,24 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
     camera.position.set(6.2, 3.6, 7.4);
     cameraRef.current = camera;
 
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
+    // Renderer setup with WebGL safety guard
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+      setWebglError(null);
+    } catch (err) {
+      setWebglError(
+        err instanceof Error
+          ? err.message
+          : 'WebGL tidak didukung atau sedang diblokir oleh peramban.'
+      );
+      return;
+    }
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
@@ -579,9 +591,15 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
       renderer.setSize(newW, newH);
     };
     window.addEventListener('resize', handleResize);
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => handleResize())
+        : null;
+    resizeObserver?.observe(container);
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
       cancelAnimationFrame(frameId);
       controls.dispose();
       geometriesToDispose.forEach((g) => g.dispose());
@@ -742,10 +760,21 @@ export const Thread3DPreviewPanel: React.FC<Thread3DPreviewPanelProps> = ({
 
       {/* Main 3D WebGL Viewport Container */}
       <div className="relative bg-slate-950">
-        <div
-          ref={mountRef}
-          className="w-full h-[400px] sm:h-[440px] cursor-grab active:cursor-grabbing"
-        />
+        {webglError ? (
+          <div className="w-full h-[400px] sm:h-[440px] flex flex-col items-center justify-center p-6 text-center text-slate-300 space-y-2">
+            <p className="text-sm font-semibold text-white">
+              Pratinjau 3D WebGL Tidak Tersedia di Perangkat Ini
+            </p>
+            <p className="text-xs text-slate-400 max-w-md">
+              Akselerasi hardware WebGL tidak aktif ({webglError}). Anda tetap dapat menggunakan diagram penampang 2D CAD di bawah ini.
+            </p>
+          </div>
+        ) : (
+          <div
+            ref={mountRef}
+            className="w-full h-[400px] sm:h-[440px] cursor-grab active:cursor-grabbing"
+          />
+        )}
 
         {/* Floating Top-Left Real-Time Dimension Telemetry Overlay */}
         <div className="absolute top-3 left-3 bg-slate-900/90 border border-slate-700/80 rounded-md p-2.5 text-[11px] font-mono text-slate-200 space-y-1 pointer-events-none">

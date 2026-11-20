@@ -17,19 +17,15 @@ dotenv.config();
 
 const PORT = Number(process.env.PORT) || 3000;
 
-// Supabase Rest v1 configuration (server-side proxy)
-const SUPABASE_PROJECT_ID =
-  process.env.SUPABASE_PROJECT_ID || 'zfxzrhqiiojhojvlxqsj';
-const SUPABASE_REST_URL = (
-  process.env.SUPABASE_URL ||
-  `https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/`
-).replace(/\/+$/, '');
-const SUPABASE_ANON_KEY =
-  process.env.SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmeHpyaHFpaW9qaG9qdmx4cXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzgxNjgsImV4cCI6MjEwNjMxNDE2OH0.NvvHMejF2vq3b8wM2swVLD22h_f6an91gYQYAT7A2Ek';
-const SUPABASE_PUBLISHABLE_KEY =
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
-  'sb_publishable_KBrCoCSfUnYOFb0A53cr3A_OW6N7W94';
+// Optional Supabase Rest v1 configuration (server-side proxy)
+const SUPABASE_REST_URL = String(process.env.SUPABASE_URL || '')
+  .trim()
+  .replace(/\/+$/, '');
+const SUPABASE_ANON_KEY = String(process.env.SUPABASE_ANON_KEY || '').trim();
+const SUPABASE_PUBLISHABLE_KEY = String(
+  process.env.SUPABASE_PUBLISHABLE_KEY || ''
+).trim();
+const IS_SUPABASE_CONFIGURED = Boolean(SUPABASE_REST_URL && SUPABASE_ANON_KEY);
 
 export interface WireInspectionLogEntry {
   rowId: string;
@@ -167,6 +163,7 @@ function mapSupabaseProjectRowToCalculatedRow(
 }
 
 async function fetchRemoteWorkspaceFromSupabase(): Promise<Partial<PersistedWorkspaceState> | null> {
+  if (!IS_SUPABASE_CONFIGURED) return null;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -253,6 +250,7 @@ async function fetchRemoteWorkspaceFromSupabase(): Promise<Partial<PersistedWork
 async function pushWorkspaceToSupabase(
   state: PersistedWorkspaceState
 ): Promise<void> {
+  if (!IS_SUPABASE_CONFIGURED) return;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
@@ -295,6 +293,7 @@ async function pushWorkspaceToSupabase(
 async function fetchWireInspectionsFromSupabase(): Promise<
   Array<Record<string, any>>
 > {
+  if (!IS_SUPABASE_CONFIGURED) return [];
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -316,6 +315,7 @@ async function fetchWireInspectionsFromSupabase(): Promise<
 }
 
 async function syncWithSupabaseOnBoot(): Promise<void> {
+  if (!IS_SUPABASE_CONFIGURED) return;
   try {
     const remote = await fetchRemoteWorkspaceFromSupabase();
     if (remote && remote.projectRows && remote.projectRows.length > 0) {
@@ -344,6 +344,7 @@ async function syncWithSupabaseOnBoot(): Promise<void> {
 async function pushWireInspectionToSupabase(
   entry: WireInspectionLogEntry
 ): Promise<void> {
+  if (!IS_SUPABASE_CONFIGURED) return;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -373,6 +374,15 @@ async function pushWireInspectionToSupabase(
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
+
+  // GET /api/health — Health check endpoint
+  app.get('/api/health', (_req: Request, res: Response) => {
+    res.json({
+      ok: true,
+      platform: 'node',
+      updatedAt: serverWorkspaceState.updatedAt,
+    });
+  });
 
   // GET /api/worksheet — Retrieve persisted project worksheet & 3-wire QC data
   app.get('/api/worksheet', async (_req: Request, res: Response) => {
